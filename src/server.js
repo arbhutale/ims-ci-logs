@@ -8,22 +8,22 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
 const SERVICES = [
-  { id: 'ims-api-gateway', name: 'API Gateway', icon: '🚪', port: 8080, type: 'gateway', category: 'Core & Gateway' },
-  { id: 'ims-main-backend', name: 'Main Backend', icon: '🏢', port: 8081, type: 'core', category: 'Core & Gateway' },
-  { id: 'ims-catalog-service', name: 'Catalog Service', icon: '📦', port: 4002, type: 'microservice', category: 'Microservices' },
-  { id: 'ims-inventory-service', name: 'Inventory Service', icon: '🏭', port: 4003, type: 'microservice', category: 'Microservices' },
-  { id: 'ims-sales-service', name: 'Sales & Orders', icon: '🧾', port: 4004, type: 'microservice', category: 'Microservices' },
-  { id: 'ims-payment-service', name: 'Payment Service', icon: '💳', port: 4006, type: 'microservice', category: 'Microservices' },
-  { id: 'ims-logistics-service', name: 'Logistics Service', icon: '🚚', port: 4007, type: 'microservice', category: 'Microservices' },
-  { id: 'ims-communication-service', name: 'Communication Service', icon: '📬', port: 4008, type: 'microservice', category: 'Microservices' },
-  { id: 'ims-audit-service', name: 'Audit & Telemetry', icon: '🔍', port: 4009, type: 'microservice', category: 'Microservices' },
+  { id: 'ims-api-gateway', name: 'API Gateway', icon: '🚪', port: 8080, domain: 'http://api.smartseth.dev', type: 'gateway', category: 'Core & Gateway' },
+  { id: 'ims-main-backend', name: 'Main Backend', icon: '🏢', port: 8081, domain: 'http://api.smartseth.dev', type: 'core', category: 'Core & Gateway' },
+  { id: 'ims-catalog-service', name: 'Catalog Service', icon: '📦', port: 4002, domain: 'http://api.smartseth.dev/api/products', type: 'microservice', category: 'Microservices' },
+  { id: 'ims-inventory-service', name: 'Inventory Service', icon: '🏭', port: 4003, domain: 'http://api.smartseth.dev/api/inventory', type: 'microservice', category: 'Microservices' },
+  { id: 'ims-sales-service', name: 'Sales & Orders', icon: '🧾', port: 4004, domain: 'http://api.smartseth.dev/api/sales-invoices', type: 'microservice', category: 'Microservices' },
+  { id: 'ims-payment-service', name: 'Payment Service', icon: '💳', port: 4006, domain: 'http://api.smartseth.dev/api/razorpay', type: 'microservice', category: 'Microservices' },
+  { id: 'ims-logistics-service', name: 'Logistics Service', icon: '🚚', port: 4007, domain: 'http://api.smartseth.dev/api/logistics', type: 'microservice', category: 'Microservices' },
+  { id: 'ims-communication-service', name: 'Communication Service', icon: '📬', port: 4008, domain: 'http://api.smartseth.dev/api/communication', type: 'microservice', category: 'Microservices' },
+  { id: 'ims-audit-service', name: 'Audit & Telemetry', icon: '🔍', port: 4009, domain: 'http://api.smartseth.dev/api/audit', type: 'microservice', category: 'Microservices' },
   { id: 'ims-redis', name: 'Redis Cache', icon: '⚡', port: 6379, type: 'infrastructure', category: 'Core & Gateway' },
-  { id: 'ims-admin-web', name: 'Admin Web', icon: '🖥️', port: 3000, type: 'frontend', category: 'Frontends & UI' },
-  { id: 'ims-superadmin-web', name: 'Superadmin Web', icon: '👑', port: 3002, type: 'frontend', category: 'Frontends & UI' },
-  { id: 'ims-storefront-web', name: 'Storefront Web', icon: '🛍️', port: 3001, type: 'frontend', category: 'Frontends & UI' },
-  { id: 'ims-generator-backend', name: 'App Gen Backend', icon: '⚙️', port: 8005, type: 'generator', category: 'App Generator' },
-  { id: 'ims-generator-frontend', name: 'App Gen Frontend', icon: '📱', port: 3005, type: 'generator', category: 'App Generator' },
-  { id: 'web-log-viewer', name: 'Tracer & CI Logs Hub', icon: '📊', port: 8888, type: 'observability', category: 'Observability' }
+  { id: 'ims-admin-web', name: 'Admin Web', icon: '🖥️', port: 3000, domain: 'http://admin.smartseth.dev', type: 'frontend', category: 'Frontends & UI' },
+  { id: 'ims-superadmin-web', name: 'Superadmin Web', icon: '👑', port: 3002, domain: 'http://superadmin.smartseth.dev', type: 'frontend', category: 'Frontends & UI' },
+  { id: 'ims-storefront-web', name: 'Storefront Web', icon: '🛍️', port: 3001, domain: 'http://smartseth.dev', type: 'frontend', category: 'Frontends & UI' },
+  { id: 'ims-generator-backend', name: 'App Gen Backend', icon: '⚙️', port: 8005, domain: 'http://generator.smartseth.dev/api', type: 'generator', category: 'App Generator' },
+  { id: 'ims-generator-frontend', name: 'App Gen Frontend', icon: '📱', port: 3005, domain: 'http://generator.smartseth.dev', type: 'generator', category: 'App Generator' },
+  { id: 'web-log-viewer', name: 'Tracer & CI Logs Hub', icon: '📊', port: 8888, domain: 'http://logs.smartseth.dev', type: 'observability', category: 'Observability' }
 ];
 
 // Helper to fetch pod resource usage via kubectl top pods

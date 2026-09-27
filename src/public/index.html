@@ -875,12 +875,13 @@
         var isActive = activeHopIds.indexOf(s.id) !== -1;
         var cardClass = isFailed ? 'failed-hop' : (isActive ? 'active-hop' : '');
         var isRunning = s.k8s && (s.k8s.ready || s.k8s.status === 'Running');
+        var domainLink = s.domain ? '<a href="' + s.domain + '" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent); font-size:11px; text-decoration:none; margin-left:6px;" title="Open ' + s.domain + '">🔗 ' + s.domain.replace('http://', '') + '</a>' : '';
         
         html += '<div class="service-node ' + cardClass + '" data-service-id="' + s.id + '">' +
           '<div>' +
             '<div class="node-icon">' + s.icon + '</div>' +
             '<div class="node-name">' + s.name + '</div>' +
-            '<div class="node-port"><span class="node-status ' + (isRunning ? '' : 'err') + '"></span>:' + s.port + '</div>' +
+            '<div class="node-port"><span class="node-status ' + (isRunning ? '' : 'err') + '"></span>:' + s.port + domainLink + '</div>' +
           '</div>' +
           '<div class="node-usage-row">' +
             '<span>CPU: ' + (s.k8s.cpu || '< 5m') + '</span>' +
@@ -905,6 +906,7 @@
       for (var i = 0; i < servicesData.length; i++) {
         var s = servicesData[i];
         var isRunning = s.k8s && (s.k8s.ready || s.k8s.status === 'Running');
+        var domainHtml = s.domain ? '<a href="' + s.domain + '" target="_blank" style="color:var(--accent); text-decoration:none; font-family:var(--font-mono); font-size:12px;">' + s.domain.replace('http://', '') + ' ↗</a>' : '<span style="color:var(--text-muted)">:' + s.port + '</span>';
         html += '<tr>' +
           '<td><b>' + s.icon + ' ' + s.name + '</b></td>' +
           '<td><span style="color:var(--text-muted)">' + (s.category || 'Service') + '</span></td>' +
@@ -913,7 +915,7 @@
           '<td><b style="font-family:var(--font-mono); color:#a5b4fc">' + (s.k8s.cpu || '< 5m') + '</b></td>' +
           '<td><b style="font-family:var(--font-mono); color:#6ee7b7">' + (s.k8s.memory || '30Mi') + '</b></td>' +
           '<td>' + (s.k8s.restarts || 0) + '</td>' +
-          '<td><code>:' + s.port + '</code></td>' +
+          '<td>' + domainHtml + '</td>' +
         '</tr>';
       }
       tbody.innerHTML = html;
