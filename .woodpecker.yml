@@ -3,26 +3,31 @@ when:
 
 steps:
   - name: deploy-tracer
-    image: appleboy/drone-ssh:latest
+    image: alpine:latest
     when:
       - branch: [dev, main]
         event: [push, manual]
-    settings:
-      host: 157.180.82.28
-      port: 22
-      username: root
-      key:
+    environment:
+      SERVER_SSH_KEY:
         from_secret: SERVER_SSH_KEY
-      command_timeout: 15m
-      script:
-        - echo "🚀 Deploying Observability & Tracer UI Hub to dev..."
-        - export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no"
-        - if [ ! -d "/opt/ims/ims-ci-logs/.git" ]; then mkdir -p /opt/ims && rm -rf /opt/ims/ims-ci-logs && (git clone -b dev git@github.com:arbhutale/ims-ci-logs.git /opt/ims/ims-ci-logs || git clone -b dev https://github.com/arbhutale/ims-ci-logs.git /opt/ims/ims-ci-logs); fi
-        - cd /opt/ims/ims-ci-logs
-        - git fetch origin dev && git checkout dev && git pull origin dev
-        - cp scripts/deploy.sh /opt/ims/deploy.sh && chmod +x /opt/ims/deploy.sh
-        - docker build -t ims-trace-ui:latest .
-        - docker save ims-trace-ui:latest | k3s ctr images import -
-        - kubectl apply -f k8s/tracer-ui.yaml -n dev
-        - kubectl delete pod -n dev -l app=web-log-viewer --force --grace-period=0 || true
-        - echo "✅ Tracer UI successfully deployed with latest changes!"
+    commands:
+      - apk add --no-cache openssh-client tar
+      - mkdir -p ~/.ssh && echo "$SERVER_SSH_KEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
+      - echo "📦 Archiving Observability UI..."
+      - tar --exclude='.git' -czf /tmp/ci-logs.tar.gz .
+      - echo "🚀 Syncing to remote server 157.180.82.28..."
+      - ssh -o StrictHostKeyChecking=no root@157.180.82.28 "mkdir -p /opt/ims/ims-ci-logs"
+      - scp -o StrictHostKeyChecking=no /tmp/ci-logs.tar.gz root@157.180.82.28:/tmp/ci-logs.tar.gz
+      - ssh -o StrictHostKeyChecking=no root@157.180.82.28 "tar -xzf /tmp/ci-logs.tar.gz -C /opt/ims/ims-ci-logs && rm -f /tmp/ci-logs.tar.gz"
+      - echo "🔨 Building and deploying Tracer UI..."
+      - |
+        ssh -o StrictHostKeyChecking=no root@157.180.82.28 << 'EOF'
+          set -e
+          cd /opt/ims/ims-ci-logs
+          cp scripts/deploy.sh /opt/ims/deploy.sh && chmod +x /opt/ims/deploy.sh
+          docker build -t ims-trace-ui:latest .
+          docker save ims-trace-ui:latest | k3s ctr images import -
+          kubectl apply -f k8s/tracer-ui.yaml -n dev
+          kubectl delete pod -n dev -l app=web-log-viewer --force --grace-period=0 || true
+          echo "✅ Tracer UI successfully deployed with latest changes!"
+        EOF
