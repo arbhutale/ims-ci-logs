@@ -45,6 +45,84 @@ deploy_single_microservice() {
 }
 
 case "$SERVICE" in
+  auto|detect|changed)
+    echo "🔍 Detecting changed files on branch $BRANCH..."
+    cd /opt/ims/server || (mkdir -p /opt/ims && git clone -b $BRANCH https://github.com/arbhutale/ims-server.git /opt/ims/server && cd /opt/ims/server)
+    cd /opt/ims/server
+    git fetch origin $BRANCH || true
+    PREV_COMMIT=$(git rev-parse HEAD~1 2>/dev/null || echo "HEAD")
+    git checkout $BRANCH || true
+    git pull origin $BRANCH || true
+    
+    DIFF_OUTPUT=$(git diff --name-only $PREV_COMMIT HEAD 2>/dev/null || echo "services/")
+    echo "📋 Changed files:"
+    echo "$DIFF_OUTPUT"
+    
+    DELEGATED=0
+    if echo "$DIFF_OUTPUT" | grep -qE "(services/shared/|package.*json|k8s/)"; then
+      echo "📦 Shared files or core configs changed - applying manifests and rebuilding microservices..."
+      [ -f k8s/deployments.yaml ] && kubectl apply -f k8s/deployments.yaml -n $NAMESPACE
+      /opt/ims/deploy.sh all $NAMESPACE $BRANCH
+      DELEGATED=1
+    else
+      [ -f k8s/deployments.yaml ] && kubectl apply -f k8s/deployments.yaml -n $NAMESPACE
+      if echo "$DIFF_OUTPUT" | grep -q "services/catalog_service/"; then
+        echo "⚡ Building only catalog-service..."
+        deploy_single_microservice "catalog-service" "services/catalog_service/Dockerfile"
+        DELEGATED=1
+      fi
+      if echo "$DIFF_OUTPUT" | grep -q "services/inventory_service/"; then
+        echo "⚡ Building only inventory-service..."
+        deploy_single_microservice "inventory-service" "services/inventory_service/Dockerfile"
+        DELEGATED=1
+      fi
+      if echo "$DIFF_OUTPUT" | grep -q "services/sales_service/"; then
+        echo "⚡ Building only sales-service..."
+        deploy_single_microservice "sales-service" "services/sales_service/Dockerfile"
+        DELEGATED=1
+      fi
+      if echo "$DIFF_OUTPUT" | grep -q "services/payment_service/"; then
+        echo "⚡ Building only payment-service..."
+        deploy_single_microservice "payment-service" "services/payment_service/Dockerfile"
+        DELEGATED=1
+      fi
+      if echo "$DIFF_OUTPUT" | grep -q "services/logistics_service/"; then
+        echo "⚡ Building only logistics-service..."
+        deploy_single_microservice "logistics-service" "services/logistics_service/Dockerfile"
+        DELEGATED=1
+      fi
+      if echo "$DIFF_OUTPUT" | grep -q "services/communication_service/"; then
+        echo "⚡ Building only communication-service..."
+        deploy_single_microservice "communication-service" "services/communication_service/Dockerfile"
+        DELEGATED=1
+      fi
+      if echo "$DIFF_OUTPUT" | grep -q "services/audit_service/"; then
+        echo "⚡ Building only audit-service..."
+        deploy_single_microservice "audit-service" "services/audit_service/Dockerfile"
+        DELEGATED=1
+      fi
+      if echo "$DIFF_OUTPUT" | grep -q "gateway/"; then
+        echo "⚡ Building only api-gateway..."
+        docker build -t ims-api-gateway:latest ./gateway
+        docker save ims-api-gateway:latest | k3s ctr images import -
+        kubectl rollout restart deployment/ims-api-gateway -n $NAMESPACE
+        DELEGATED=1
+      fi
+      if echo "$DIFF_OUTPUT" | grep -qE "(services/core_service/|index.js|Dockerfile)"; then
+        echo "⚡ Building only main-backend..."
+        docker build -t ims-main-backend:latest -f Dockerfile .
+        docker save ims-main-backend:latest | k3s ctr images import -
+        kubectl rollout restart deployment/ims-main-backend -n $NAMESPACE
+        DELEGATED=1
+      fi
+    fi
+
+    if [ "$DELEGATED" -eq 0 ]; then
+      echo "ℹ️ No specific microservice changed. Ensuring deployments are up to date."
+      /opt/ims/deploy.sh all $NAMESPACE $BRANCH
+    fi
+    ;;
+
   catalog-service|catalog)
     deploy_single_microservice "catalog-service" "services/catalog_service/Dockerfile"
     ;;
