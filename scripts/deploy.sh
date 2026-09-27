@@ -68,9 +68,14 @@ case "$SERVICE" in
     echo "$DIFF_OUTPUT"
     
     DELEGATED=0
-    if echo "$DIFF_OUTPUT" | grep -qE "(services/shared/|package.*json|k8s/)"; then
-      echo "📦 Shared files or core configs changed - applying manifests and rebuilding microservices..."
+    if echo "$DIFF_OUTPUT" | grep -qE "(services/shared/|package.*json|k8s/|gateway/)"; then
+      echo "📦 Shared files, core configs, or gateway changed - applying manifests..."
       [ -f k8s/deployments.yaml ] && kubectl apply -f k8s/deployments.yaml -n $NAMESPACE
+      if echo "$DIFF_OUTPUT" | grep -q "gateway/"; then
+        echo "⚡ Building updated api-gateway image..."
+        docker build -t ims-api-gateway:latest ./gateway
+        docker save ims-api-gateway:latest | k3s ctr images import -
+      fi
       /opt/ims/deploy.sh all $NAMESPACE $BRANCH
       DELEGATED=1
     else
