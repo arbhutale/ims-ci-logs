@@ -201,7 +201,7 @@ case "$SERVICE" in
       git pull origin $BRANCH 2>/dev/null || true
     fi
     echo "🔨 Building ims-admin-web Docker image..."
-    docker build -t ims-admin-web:latest --build-arg NEXT_PUBLIC_API_URL=http://api.smartseth.dev/api .
+    docker build -t ims-admin-web:latest --build-arg NEXT_PUBLIC_API_URL=https://api.smartseth.com/api .
     docker save ims-admin-web:latest | k3s ctr images import -
     [ -f k8s/deployment.yaml ] && kubectl apply -f k8s/deployment.yaml -n $NAMESPACE
     kubectl rollout restart deployment/ims-admin-web -n $NAMESPACE
@@ -219,7 +219,7 @@ case "$SERVICE" in
       git pull origin $BRANCH 2>/dev/null || true
     fi
     echo "🔨 Building ims-superadmin-web Docker image..."
-    docker build -t ims-superadmin-web:latest --build-arg NEXT_PUBLIC_API_URL=http://api.smartseth.dev/api .
+    docker build -t ims-superadmin-web:latest --build-arg NEXT_PUBLIC_API_URL=https://api.smartseth.com/api .
     docker save ims-superadmin-web:latest | k3s ctr images import -
     [ -f k8s/deployment.yaml ] && kubectl apply -f k8s/deployment.yaml -n $NAMESPACE
     kubectl rollout restart deployment/ims-superadmin-web -n $NAMESPACE
@@ -237,7 +237,7 @@ case "$SERVICE" in
       git pull origin $BRANCH 2>/dev/null || true
     fi
     echo "🔨 Building ims-storefront-web Docker image..."
-    docker build -t ims-storefront-web:latest --build-arg NEXT_PUBLIC_API_URL=http://api.smartseth.dev/api .
+    docker build -t ims-storefront-web:latest --build-arg NEXT_PUBLIC_API_URL=https://api.smartseth.com/api .
     docker save ims-storefront-web:latest | k3s ctr images import -
     [ -f k8s/deployment.yaml ] && kubectl apply -f k8s/deployment.yaml -n $NAMESPACE
     kubectl rollout restart deployment/ims-storefront-web -n $NAMESPACE
