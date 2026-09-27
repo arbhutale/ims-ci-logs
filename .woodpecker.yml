@@ -16,7 +16,8 @@ steps:
       command_timeout: 15m
       script:
         - echo "🚀 Deploying Observability & Tracer UI Hub to dev..."
-        - cd /opt/ims/ims-ci-logs || (mkdir -p /opt/ims && git clone -b dev https://github.com/arbhutale/ims-ci-logs.git /opt/ims/ims-ci-logs && cd /opt/ims/ims-ci-logs)
+        - export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no"
+        - if [ ! -d "/opt/ims/ims-ci-logs/.git" ]; then mkdir -p /opt/ims && rm -rf /opt/ims/ims-ci-logs && (git clone -b dev git@github.com:arbhutale/ims-ci-logs.git /opt/ims/ims-ci-logs || git clone -b dev https://github.com/arbhutale/ims-ci-logs.git /opt/ims/ims-ci-logs); fi
         - cd /opt/ims/ims-ci-logs
         - git fetch origin dev && git checkout dev && git pull origin dev
         - cp scripts/deploy.sh /opt/ims/deploy.sh && chmod +x /opt/ims/deploy.sh
