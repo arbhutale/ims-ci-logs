@@ -1,0 +1,26 @@
+name: CI/CD Pipeline - Observability & Tracer Hub
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: 🚀 Deploy Tracer Hub to Hetzner K3s
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Execute Deployment on Hetzner VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST || '157.180.82.28' }}
+          username: ${{ secrets.SERVER_USER || 'root' }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            echo "🚀 Updating Observability & Tracer UI Hub..."
+            /opt/ims/deploy.sh tracer-ui dev dev

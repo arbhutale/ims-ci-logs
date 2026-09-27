@@ -1,0 +1,17 @@
+when:
+  - event: [push, manual]
+
+steps:
+  - name: deploy-tracer
+    image: appleboy/drone-ssh:latest
+    when:
+      - branch: [dev, main]
+        event: [push, manual]
+    settings:
+      host: 157.180.82.28
+      username: root
+      key:
+        from_secret: SERVER_SSH_KEY
+      script:
+        - echo "🚀 Deploying Observability & Tracer UI Hub..."
+        - /opt/ims/deploy.sh tracer-ui dev dev

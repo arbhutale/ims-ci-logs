@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚡ IMS Live Flow Tracer & Observability Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #07090e;
+      --bg-card: #0e131f;
+      --bg-card-hover: #141b2d;
+      --border: #1e293b;
+      --border-accent: #334155;
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --primary-glow: rgba(99, 102, 241, 0.25);
+      --accent: #38bdf8;
+      --success: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.12);
+      --error: #f43f5e;
+      --error-bg: rgba(244, 63, 94, 0.15);
+      --warn: #f59e0b;
+      --warn-bg: rgba(245, 158, 11, 0.12);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navbar */
+    .navbar {
+      background: rgba(14, 19, 31, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, #6366f1, #38bdf8);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+    .brand-title {
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+      background: linear-gradient(to right, #fff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .env-toggle {
+      display: flex;
+      background: #090d16;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 3px;
+      gap: 4px;
+    }
+    .env-btn {
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-muted);
+      border: none;
+      background: transparent;
+      transition: all 0.2s;
+    }
+    .env-btn.active-dev {
+      background: rgba(99, 102, 241, 0.25);
+      color: #818cf8;
+      border: 1px solid rgba(99, 102, 241, 0.4);
+    }
+    .env-btn.active-prod {
+      background: rgba(244, 63, 94, 0.25);
+      color: #f43f5e;
+      border: 1px solid rgba(244, 63, 94, 0.4);
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      background: #090d16;
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .nav-tab {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .nav-tab:hover { color: var(--text-main); }
+    .nav-tab.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 2px 8px var(--primary-glow);
+    }
+
+    .live-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--success);
+      font-weight: 600;
+      background: var(--success-bg);
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 10px var(--success);
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.7; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.7; }
+    }
+
+    /* Main Container */
+    .main-content {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+      flex: 1;
+    }
+
+    /* Service Architecture Topology Map */
+    .topology-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-main);
+    }
+    
+    .topology-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      align-items: center;
+    }
+    .service-node {
+      background: #090d16;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 10px;
+      text-align: center;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      cursor: pointer;
+    }
+    .service-node:hover {
+      border-color: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+    }
+    .service-node.active-hop {
+      border-color: var(--success);
+      background: rgba(16, 185, 129, 0.08);
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+    }
+    .service-node.failed-hop {
+      border-color: var(--error);
+      background: var(--error-bg);
+      box-shadow: 0 0 20px rgba(244, 63, 94, 0.4);
+      animation: pulse-border 1.5s infinite;
+    }
+    @keyframes pulse-border {
+      0% { border-color: var(--error); }
+      50% { border-color: #ff8fa3; }
+      100% { border-color: var(--error); }
+    }
+    .node-icon { font-size: 22px; margin-bottom: 6px; }
+    .node-name { font-size: 12px; font-weight: 700; color: #e2e8f0; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .node-port { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+    .node-status {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      margin-right: 4px;
+    }
+
+    /* Search Flow Panel */
+    .search-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .search-input-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .search-input {
+      flex: 1;
+      background: #090d16;
+      border: 1px solid #2d3748;
+      border-radius: 12px;
+      padding: 14px 18px;
+      color: #fff;
+      font-size: 15px;
+      font-family: var(--font-mono);
+      outline: none;
+      transition: all 0.2s;
+    }
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 0 28px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #4f46e5, #4338ca);
+      transform: translateY(-1px);
+    }
+
+    .quick-chips {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .chips-label { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+    .chip {
+      background: #141b2d;
+      border: 1px solid #2d3748;
+      color: #93c5fd;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .chip:hover {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    /* Flow Hop Sequence Banner */
+    .flow-summary-banner {
+      display: none;
+      margin-top: 20px;
+      padding: 16px 20px;
+      border-radius: 12px;
+      background: #090d16;
+      border: 1px solid var(--border);
+    }
+    .flow-summary-banner.visible { display: block; }
+    .flow-summary-banner.failed { border-left: 4px solid var(--error); background: rgba(244, 63, 94, 0.06); }
+    .flow-summary-banner.success { border-left: 4px solid var(--success); background: rgba(16, 185, 129, 0.06); }
+
+    .hop-sequence {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .hop-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      background: #141b2d;
+      border: 1px solid var(--border);
+    }
+    .hop-item.failed {
+      background: var(--error-bg);
+      border-color: var(--error);
+      color: #ff8fa3;
+    }
+    .hop-item.success {
+      background: var(--success-bg);
+      border-color: var(--success);
+      color: #6ee7b7;
+    }
+    .hop-arrow { color: var(--text-muted); font-size: 14px; }
+
+    /* Timeline & Log Cards */
+    .timeline {
+      position: relative;
+      margin-top: 20px;
+      padding-left: 30px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 12px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+    .timeline-card {
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      transition: all 0.2s;
+    }
+    .timeline-card:hover { border-color: var(--border-accent); }
+    .timeline-card.error {
+      border-left: 4px solid var(--error);
+      background: #160d13;
+    }
+    .timeline-card.warn {
+      border-left: 4px solid var(--warn);
+      background: #19140b;
+    }
+    .timeline-card.success {
+      border-left: 4px solid var(--success);
+    }
+    .card-marker {
+      position: absolute;
+      left: -26px;
+      top: 16px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--bg-dark);
+      border: 2px solid var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card-marker.error { border-color: var(--error); background: var(--error); }
+    .card-marker.success { border-color: var(--success); background: var(--success); }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .service-tag {
+      font-size: 13px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: #1e1b4b;
+      color: #c7d2fe;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .level-badge {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+    }
+    .level-badge.ERROR { background: var(--error); color: #fff; }
+    .level-badge.WARN { background: var(--warn); color: #000; }
+    .level-badge.SUCCESS { background: var(--success); color: #fff; }
+    .level-badge.INFO { background: #334155; color: #cbd5e1; }
+
+    .timestamp { font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); }
+    .log-body {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: #f1f5f9;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+      background: #090d16;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #1a2234;
+    }
+
+    /* Service Log Streamer Tab */
+    .streamer-panel {
+      display: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+    .streamer-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .service-select {
+      background: #090d16;
+      border: 1px solid #2d3748;
+      border-radius: 10px;
+      padding: 10px 16px;
+      color: #fff;
+      font-size: 14px;
+      font-family: var(--font-main);
+      font-weight: 600;
+      outline: none;
+      min-width: 240px;
+    }
+    .log-terminal {
+      background: #05070a;
+      border: 1px solid #1a2234;
+      border-radius: 12px;
+      padding: 16px;
+      height: 600px;
+      overflow-y: auto;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.6;
+      color: #e2e8f0;
+    }
+    .log-line {
+      padding: 2px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+    .log-line.err { color: #fca5a5; background: rgba(244, 63, 94, 0.08); }
+    .log-line.warn { color: #fde047; }
+    .log-line.succ { color: #86efac; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+    .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.6; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <div class="nav-brand">
+      <div class="brand-logo">⚡</div>
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="brand-title">Smart Inventory Suite</span>
+          <div class="env-toggle">
+            <button class="env-btn active-dev" id="btn-env-dev" onclick="switchNamespace('dev')">DEV</button>
+            <button class="env-btn" id="btn-env-prod" onclick="switchNamespace('prod')">PROD</button>
+          </div>
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Microservices Request & Error Flow Tracer</div>
+      </div>
+    </div>
+
+    <div class="nav-tabs">
+      <div class="nav-tab active" id="tab-flow" onclick="switchTab('flow')">🔍 Request Flow Tracer</div>
+      <div class="nav-tab" id="tab-stream" onclick="switchTab('stream')">📜 Live Pod Log Stream</div>
+    </div>
+
+    <div class="live-indicator">
+      <div class="pulse-dot"></div>
+      <span id="clusterStatusText">Dev Cluster Active</span>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-content">
+
+    <!-- Topology Architecture Map -->
+    <div class="topology-container">
+      <div class="section-header">
+        <div class="section-title">
+          <span>🗺️ Microservice Architecture & Active Hops</span>
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted);">Click any service to view its live logs</div>
+      </div>
+      <div class="topology-grid" id="topologyGrid">
+        <!-- Dynamically populated -->
+      </div>
+    </div>
+
+    <!-- TAB 1: Request Flow Tracer -->
+    <div id="view-flow">
+      <div class="search-panel">
+        <div class="search-input-group">
+          <input type="text" id="queryInput" class="search-input" placeholder="Search by Order ID, User ID, Trace ID, Email, or error keyword..." value="login" />
+          <button class="btn-primary" onclick="executeTrace()">
+            <span>🔍</span>
+            <span>Trace Flow</span>
+          </button>
+        </div>
+
+        <div class="quick-chips">
+          <span class="chips-label">Quick Traces:</span>
+          <span class="chip" onclick="applyQuickFilter('login')">🔑 POST /api/auth/login</span>
+          <span class="chip" onclick="applyQuickFilter('Connected')">✅ Service DB Connections</span>
+          <span class="chip" onclick="applyQuickFilter('Error')">❌ Error & Failures</span>
+          <span class="chip" onclick="applyQuickFilter('Redis')">⚡ Redis Cache</span>
+          <span class="chip" onclick="applyQuickFilter('catalog')">📦 Catalog Microservice</span>
+          <span class="chip" onclick="applyQuickFilter('inventory')">🏭 Inventory Microservice</span>
+          <span class="chip" onclick="applyQuickFilter('payment')">💳 Payment Microservice</span>
+        </div>
+
+        <!-- Hop Sequence Banner -->
+        <div id="flowBanner" class="flow-summary-banner">
+          <div id="flowBannerTitle" style="font-weight: 700; font-size: 15px; margin-bottom: 6px;"></div>
+          <div id="flowBannerDesc" style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;"></div>
+          <div class="hop-sequence" id="hopSequenceList"></div>
+        </div>
+      </div>
+
+      <!-- Flow Results Timeline -->
+      <div id="traceResults" class="timeline">
+        <div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <div>Enter an ID or keyword above to trace its end-to-end path across all microservices.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Live Pod Log Streamer -->
+    <div id="view-stream" class="streamer-panel">
+      <div class="streamer-controls">
+        <label style="font-size: 13px; font-weight: 700; color: var(--text-muted);">Select Microservice:</label>
+        <select id="serviceSelect" class="service-select" onchange="fetchServiceLogs()">
+          <option value="ims-api-gateway">🚪 API Gateway (Port 8080)</option>
+          <option value="ims-main-backend">🏢 Main Backend (Port 8081)</option>
+          <option value="ims-catalog-service">📦 Catalog Service (Port 4002)</option>
+          <option value="ims-inventory-service">🏭 Inventory Service (Port 4003)</option>
+          <option value="ims-sales-service">🧾 Sales Service (Port 4004)</option>
+          <option value="ims-payment-service">💳 Payment Service (Port 4006)</option>
+          <option value="ims-logistics-service">🚚 Logistics Service (Port 4007)</option>
+          <option value="ims-communication-service">📬 Communication Service (Port 4008)</option>
+          <option value="ims-audit-service">🔍 Audit Service (Port 4009)</option>
+          <option value="ims-redis">⚡ Redis Cache (Port 6379)</option>
+        </select>
+        <button class="btn-primary" style="padding: 10px 18px; font-size: 13px;" onclick="fetchServiceLogs()">🔄 Refresh Logs</button>
+      </div>
+
+      <div class="log-terminal" id="logTerminal">
+        <div>Loading logs...</div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    var currentNamespace = 'dev';
+    var servicesData = [];
+
+    function switchNamespace(ns) {
+      currentNamespace = ns;
+      document.getElementById('btn-env-dev').className = 'env-btn ' + (ns === 'dev' ? 'active-dev' : '');
+      document.getElementById('btn-env-prod').className = 'env-btn ' + (ns === 'prod' ? 'active-prod' : '');
+      document.getElementById('clusterStatusText').innerText = (ns === 'prod' ? 'Prod' : 'Dev') + ' Cluster Active';
+      loadServices();
+      executeTrace();
+    }
+
+    async function loadServices() {
+      try {
+        var res = await fetch('/api/services?ns=' + currentNamespace);
+        servicesData = await res.json();
+        renderTopology();
+      } catch (e) {
+        console.error('Failed to load services', e);
+      }
+    }
+
+    function renderTopology(activeHopIds, failedHopId) {
+      if (!activeHopIds) activeHopIds = [];
+      var grid = document.getElementById('topologyGrid');
+      var html = '';
+      for (var i = 0; i < servicesData.length; i++) {
+        var s = servicesData[i];
+        var isFailed = failedHopId === s.id;
+        var isActive = activeHopIds.indexOf(s.id) !== -1;
+        var cardClass = isFailed ? 'failed-hop' : (isActive ? 'active-hop' : '');
+        
+        html += '<div class="service-node ' + cardClass + '" data-service-id="' + s.id + '">' +
+          '<div class="node-icon">' + s.icon + '</div>' +
+          '<div class="node-name">' + s.name + '</div>' +
+          '<div class="node-port"><span class="node-status"></span>:' + s.port + '</div>' +
+        '</div>';
+      }
+      grid.innerHTML = html;
+
+      var nodes = grid.querySelectorAll('.service-node');
+      nodes.forEach(function(node) {
+        node.addEventListener('click', function() {
+          inspectService(this.getAttribute('data-service-id'));
+        });
+      });
+    }
+
+    function switchTab(tab) {
+      document.getElementById('tab-flow').className = 'nav-tab ' + (tab === 'flow' ? 'active' : '');
+      document.getElementById('tab-stream').className = 'nav-tab ' + (tab === 'stream' ? 'active' : '');
+      document.getElementById('view-flow').style.display = tab === 'flow' ? 'block' : 'none';
+      document.getElementById('view-stream').style.display = tab === 'stream' ? 'block' : 'none';
+
+      if (tab === 'stream') {
+        fetchServiceLogs();
+      }
+    }
+
+    function inspectService(serviceId) {
+      switchTab('stream');
+      document.getElementById('serviceSelect').value = serviceId;
+      fetchServiceLogs();
+    }
+
+    function applyQuickFilter(val) {
+      document.getElementById('queryInput').value = val;
+      executeTrace();
+    }
+
+    async function executeTrace() {
+      var q = document.getElementById('queryInput').value.trim();
+      var resultsDiv = document.getElementById('traceResults');
+      var banner = document.getElementById('flowBanner');
+      if (!q) return;
+
+      resultsDiv.innerHTML = '<div class="empty-state"><div class="empty-icon">⚡</div><div>Tracing request hops across all ' + currentNamespace.toUpperCase() + ' pods in real-time...</div></div>';
+
+      try {
+        var res = await fetch('/api/trace?q=' + encodeURIComponent(q) + '&ns=' + currentNamespace);
+        var data = await res.json();
+
+        if (!data || !data.flow || data.flow.length === 0) {
+          banner.className = 'flow-summary-banner';
+          renderTopology();
+          resultsDiv.innerHTML = '<div class="empty-state"><div class="empty-icon">❌</div><div>No trace entries found in <b>' + currentNamespace.toUpperCase() + '</b> for query: <b>' + escapeHtml(q) + '</b></div></div>';
+          return;
+        }
+
+        // Highlight Topology
+        var activeIds = (data.hops || []).map(function(h) { return h.id; });
+        renderTopology(activeIds, data.failedServiceId);
+
+        // Render Banner
+        banner.className = 'flow-summary-banner visible ' + (data.hasError ? 'failed' : 'success');
+        document.getElementById('flowBannerTitle').innerHTML = data.hasError ?
+          '❌ Request Execution FAILED at ' + escapeHtml(data.failedService) :
+          '✅ Request Flow Successfully Traced across ' + data.hops.length + ' Service(s)';
+        document.getElementById('flowBannerDesc').innerHTML = data.hasError ?
+          '<b>Root Cause:</b> ' + escapeHtml(data.failureReason || 'Error encountered in service processing') :
+          'Total matching events: ' + data.totalLogs + ' chronologically mapped.';
+
+        // Render Hops
+        var hopList = document.getElementById('hopSequenceList');
+        var hopsHtml = '';
+        for (var i = 0; i < data.hops.length; i++) {
+          var hop = data.hops[i];
+          var isFail = hop.status === 'FAILED';
+          hopsHtml += '<div class="hop-item ' + (isFail ? 'failed' : 'success') + '">' +
+            '<span>' + hop.icon + '</span>' +
+            '<span>' + hop.name + '</span>' +
+            '<span>' + (isFail ? '❌ FAILED' : '✅') + '</span>' +
+          '</div>';
+          if (i < data.hops.length - 1) {
+            hopsHtml += '<div class="hop-arrow">➔</div>';
+          }
+        }
+        hopList.innerHTML = hopsHtml;
+
+        // Render Log Cards
+        var html = '';
+        for (var j = 0; j < data.flow.length; j++) {
+          var item = data.flow[j];
+          var cardClass = item.level === 'ERROR' ? 'error' : (item.level === 'WARN' ? 'warn' : (item.level === 'SUCCESS' ? 'success' : ''));
+          var markerClass = item.level === 'ERROR' ? 'error' : (item.level === 'SUCCESS' ? 'success' : '');
+
+          html += '<div class="timeline-card ' + cardClass + '">' +
+            '<div class="card-marker ' + markerClass + '"></div>' +
+            '<div class="card-header">' +
+              '<div class="service-tag">' +
+                '<span>' + item.serviceIcon + '</span>' +
+                '<span>' + item.serviceName + '</span>' +
+                '<span class="level-badge ' + item.level + '">' + item.level + '</span>' +
+              '</div>' +
+              '<div class="timestamp">' + (item.time || '') + '</div>' +
+            '</div>' +
+            '<div class="log-body">' + escapeHtml(item.log) + '</div>' +
+          '</div>';
+        }
+
+        resultsDiv.innerHTML = html;
+      } catch (err) {
+        resultsDiv.innerHTML = '<div class="empty-state" style="color:var(--error)">Error querying trace API: ' + err.message + '</div>';
+      }
+    }
+
+    async function fetchServiceLogs() {
+      var select = document.getElementById('serviceSelect');
+      var term = document.getElementById('logTerminal');
+      var s = select.value;
+      term.innerHTML = '<div style="color:var(--text-muted)">Fetching latest logs for ' + s + ' (' + currentNamespace + ')...</div>';
+
+      try {
+        var res = await fetch('/api/logs?service=' + encodeURIComponent(s) + '&ns=' + currentNamespace + '&tail=250');
+        var data = await res.json();
+        if (!data.logs || data.logs.length === 0) {
+          term.innerHTML = '<div style="color:var(--text-muted)">No logs recorded yet for ' + s + ' in ' + currentNamespace + '</div>';
+          return;
+        }
+
+        var linesHtml = '';
+        for (var i = 0; i < data.logs.length; i++) {
+          var line = data.logs[i];
+          var cls = 'log-line';
+          if (/error|fail|exception|fatal|500|401/i.test(line)) cls += ' err';
+          else if (/warn/i.test(line)) cls += ' warn';
+          else if (/success|connected|started/i.test(line)) cls += ' succ';
+          linesHtml += '<div class="' + cls + '">' + escapeHtml(line) + '</div>';
+        }
+
+        term.innerHTML = linesHtml;
+        term.scrollTop = term.scrollHeight;
+      } catch (e) {
+        term.innerHTML = '<div style="color:var(--error)">Failed to stream logs: ' + e.message + '</div>';
+      }
+    }
+
+    function escapeHtml(text) {
+      return (text || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    document.getElementById('queryInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') executeTrace();
+    });
+
+    // Initial Load
+    window.addEventListener('DOMContentLoaded', function() {
+      loadServices();
+      executeTrace();
+    });
+  </script>
+</body>
+</html>

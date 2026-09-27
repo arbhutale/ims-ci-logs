@@ -1,0 +1,13 @@
+{
+  "name": "ims-ci-logs",
+  "version": "1.0.0",
+  "description": "Smart Inventory Suite - Real-Time Observability, Microservice Tracer & DevOps Infrastructure",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

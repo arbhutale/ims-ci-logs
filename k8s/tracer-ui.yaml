@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: trace-ui-sa
+  namespace: dev
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: trace-ui-cluster-role
+rules:
+- apiGroups: [""]
+  resources: ["pods", "pods/log", "services", "namespaces"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: trace-ui-cluster-binding
+subjects:
+- kind: ServiceAccount
+  name: trace-ui-sa
+  namespace: dev
+roleRef:
+  kind: ClusterRole
+  name: trace-ui-cluster-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-log-viewer
+  namespace: dev
+  labels:
+    app: web-log-viewer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-log-viewer
+  template:
+    metadata:
+      labels:
+        app: web-log-viewer
+    spec:
+      serviceAccountName: trace-ui-sa
+      containers:
+      - name: trace-ui
+        image: ims-trace-ui:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8888
+          hostPort: 8888
+          name: http
+        resources:
+          requests:
+            cpu: 20m
+            memory: 30Mi
+          limits:
+            cpu: 300m
+            memory: 150Mi
