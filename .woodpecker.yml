@@ -15,5 +15,13 @@ steps:
         from_secret: SERVER_SSH_KEY
       command_timeout: 15m
       script:
-        - echo "🚀 Deploying Observability & Tracer UI Hub..."
-        - /opt/ims/deploy.sh tracer-ui dev dev
+        - echo "🚀 Deploying Observability & Tracer UI Hub to dev..."
+        - cd /opt/ims/ims-ci-logs || (mkdir -p /opt/ims && git clone -b dev https://github.com/arbhutale/ims-ci-logs.git /opt/ims/ims-ci-logs && cd /opt/ims/ims-ci-logs)
+        - cd /opt/ims/ims-ci-logs
+        - git fetch origin dev && git checkout dev && git pull origin dev
+        - cp scripts/deploy.sh /opt/ims/deploy.sh && chmod +x /opt/ims/deploy.sh
+        - docker build -t ims-trace-ui:latest .
+        - docker save ims-trace-ui:latest | k3s ctr images import -
+        - kubectl apply -f k8s/tracer-ui.yaml -n dev
+        - kubectl delete pod -n dev -l app=web-log-viewer --force --grace-period=0 || true
+        - echo "✅ Tracer UI successfully deployed with latest changes!"

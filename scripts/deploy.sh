@@ -244,12 +244,18 @@ case "$SERVICE" in
     ;;
 
   tracer-ui|trace-ui|ci-logs)
-    echo "🔄 Updating Tracer UI..."
+    echo "🔄 Updating Tracer UI on branch $BRANCH..."
+    cd /opt/ims/ims-ci-logs || (mkdir -p /opt/ims && git clone -b $BRANCH https://github.com/arbhutale/ims-ci-logs.git /opt/ims/ims-ci-logs && cd /opt/ims/ims-ci-logs)
     cd /opt/ims/ims-ci-logs
+    git fetch origin $BRANCH || true
+    git checkout $BRANCH || true
+    git pull origin $BRANCH || true
+    cp scripts/deploy.sh /opt/ims/deploy.sh && chmod +x /opt/ims/deploy.sh
     docker build -t ims-trace-ui:latest .
     docker save ims-trace-ui:latest | k3s ctr images import -
+    [ -f k8s/tracer-ui.yaml ] && kubectl apply -f k8s/tracer-ui.yaml -n dev
     kubectl delete pod -n dev -l app=web-log-viewer --force --grace-period=0 || true
-    echo "✅ Tracer UI successfully deployed!"
+    echo "✅ Tracer UI successfully deployed with latest changes!"
     ;;
 
   all)
