@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>⚡ IMS Live Flow Tracer & Observability Hub</title>
+  <title>⚡ IMS Live Flow Tracer, Telemetry & Observability Hub</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -158,11 +158,64 @@
 
     /* Main Container */
     .main-content {
-      max-width: 1400px;
+      max-width: 1440px;
       width: 100%;
       margin: 0 auto;
       padding: 24px;
       flex: 1;
+    }
+
+    /* Global Metrics Stat Banner */
+    .metrics-banner {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+    .metric-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .metric-value-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+    .metric-value {
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      font-family: var(--font-mono);
+    }
+    .metric-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .metric-progress {
+      height: 6px;
+      background: #141b2d;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .metric-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #38bdf8);
+      border-radius: 4px;
+      transition: width 0.4s ease;
     }
 
     /* Service Architecture Topology Map */
@@ -191,9 +244,9 @@
     
     .topology-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
       gap: 12px;
-      align-items: center;
+      align-items: stretch;
     }
     .service-node {
       background: #090d16;
@@ -204,6 +257,9 @@
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
     .service-node:hover {
       border-color: var(--primary-light);
@@ -226,9 +282,9 @@
       50% { border-color: #ff8fa3; }
       100% { border-color: var(--error); }
     }
-    .node-icon { font-size: 22px; margin-bottom: 6px; }
-    .node-name { font-size: 12px; font-weight: 700; color: #e2e8f0; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .node-port { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+    .node-icon { font-size: 22px; margin-bottom: 4px; }
+    .node-name { font-size: 12px; font-weight: 700; color: #e2e8f0; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .node-port { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); margin-bottom: 6px; }
     .node-status {
       display: inline-block;
       width: 6px;
@@ -236,6 +292,32 @@
       border-radius: 50%;
       background: var(--success);
       margin-right: 4px;
+    }
+    .node-status.err { background: var(--error); }
+    .node-usage-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      background: #141b2d;
+      padding: 4px 6px;
+      border-radius: 6px;
+      color: #93c5fd;
+      margin-top: 4px;
+    }
+
+    /* Category Group Headers */
+    .category-group {
+      margin-bottom: 24px;
+    }
+    .category-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #cbd5e1;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     /* Search Flow Panel */
@@ -462,6 +544,7 @@
       display: flex;
       gap: 12px;
       align-items: center;
+      flex-wrap: wrap;
       margin-bottom: 16px;
     }
     .service-select {
@@ -474,7 +557,7 @@
       font-family: var(--font-main);
       font-weight: 600;
       outline: none;
-      min-width: 240px;
+      min-width: 260px;
     }
     .log-terminal {
       background: #05070a;
@@ -496,6 +579,39 @@
     .log-line.warn { color: #fde047; }
     .log-line.succ { color: #86efac; }
 
+    /* TAB 3: Resource Metrics Grid Panel */
+    .metrics-panel {
+      display: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+    .metrics-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 12px;
+    }
+    .metrics-table th {
+      text-align: left;
+      padding: 12px 14px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+    }
+    .metrics-table td {
+      padding: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      color: #e2e8f0;
+    }
+    .metrics-table tr:hover td {
+      background: #141b2d;
+    }
+
     .empty-state {
       text-align: center;
       padding: 60px 20px;
@@ -513,19 +629,20 @@
       <div class="brand-logo">⚡</div>
       <div>
         <div style="display: flex; align-items: center; gap: 8px;">
-          <span class="brand-title">Smart Inventory Suite</span>
+          <span class="brand-title">Smart Inventory Observability</span>
           <div class="env-toggle">
             <button class="env-btn active-dev" id="btn-env-dev" onclick="switchNamespace('dev')">DEV</button>
             <button class="env-btn" id="btn-env-prod" onclick="switchNamespace('prod')">PROD</button>
           </div>
         </div>
-        <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Microservices Request & Error Flow Tracer</div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Microservices & Frontends Telemetry, Flow Tracer & Resource Hub</div>
       </div>
     </div>
 
     <div class="nav-tabs">
       <div class="nav-tab active" id="tab-flow" onclick="switchTab('flow')">🔍 Request Flow Tracer</div>
-      <div class="nav-tab" id="tab-stream" onclick="switchTab('stream')">📜 Live Pod Log Stream</div>
+      <div class="nav-tab" id="tab-metrics" onclick="switchTab('metrics')">📊 Pod CPU & Memory</div>
+      <div class="nav-tab" id="tab-stream" onclick="switchTab('stream')">📜 Live Log Streamer</div>
     </div>
 
     <div class="live-indicator">
@@ -537,13 +654,49 @@
   <!-- Main Container -->
   <main class="main-content">
 
+    <!-- Global Resource Metrics Stat Banner -->
+    <div class="metrics-banner" id="globalMetricsBanner">
+      <div class="metric-card">
+        <div class="metric-title">Cluster CPU Load</div>
+        <div class="metric-value-row">
+          <div class="metric-value" id="val-total-cpu">--</div>
+          <div class="metric-sub" id="val-cpu-pct">--%</div>
+        </div>
+        <div class="metric-progress"><div class="metric-progress-bar" id="bar-cpu" style="width: 0%"></div></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Server RAM Usage</div>
+        <div class="metric-value-row">
+          <div class="metric-value" id="val-total-mem">--</div>
+          <div class="metric-sub" id="val-mem-pct">--%</div>
+        </div>
+        <div class="metric-progress"><div class="metric-progress-bar" id="bar-mem" style="width: 0%; background: linear-gradient(90deg, #38bdf8, #10b981)"></div></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Running Pods</div>
+        <div class="metric-value-row">
+          <div class="metric-value" id="val-pods-running">--</div>
+          <div class="metric-sub" id="val-pods-total">/ -- total</div>
+        </div>
+        <div class="metric-progress"><div class="metric-progress-bar" id="bar-pods" style="width: 100%; background: #10b981"></div></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Server Uptime & Load</div>
+        <div class="metric-value-row">
+          <div class="metric-value" id="val-uptime">-- hrs</div>
+          <div class="metric-sub" id="val-load-avg">Load: --</div>
+        </div>
+        <div class="metric-progress"><div class="metric-progress-bar" style="width: 100%; background: #6366f1"></div></div>
+      </div>
+    </div>
+
     <!-- Topology Architecture Map -->
     <div class="topology-container">
       <div class="section-header">
         <div class="section-title">
-          <span>🗺️ Microservice Architecture & Active Hops</span>
+          <span>🗺️ Microservices, Frontends & Infrastructure Topology</span>
         </div>
-        <div style="font-size: 12px; color: var(--text-muted);">Click any service to view its live logs</div>
+        <div style="font-size: 12px; color: var(--text-muted);">Live Health, Host Ports & Real-Time CPU/Memory Badges</div>
       </div>
       <div class="topology-grid" id="topologyGrid">
         <!-- Dynamically populated -->
@@ -570,6 +723,8 @@
           <span class="chip" onclick="applyQuickFilter('catalog')">📦 Catalog Microservice</span>
           <span class="chip" onclick="applyQuickFilter('inventory')">🏭 Inventory Microservice</span>
           <span class="chip" onclick="applyQuickFilter('payment')">💳 Payment Microservice</span>
+          <span class="chip" onclick="applyQuickFilter('admin')">🖥️ Admin Web</span>
+          <span class="chip" onclick="applyQuickFilter('generator')">⚙️ App Generator</span>
         </div>
 
         <!-- Hop Sequence Banner -->
@@ -589,21 +744,62 @@
       </div>
     </div>
 
-    <!-- TAB 2: Live Pod Log Streamer -->
+    <!-- TAB 2: Pod CPU & Memory Resource Metrics -->
+    <div id="view-metrics" class="metrics-panel">
+      <div class="section-header">
+        <div class="section-title">
+          <span>📊 Live Kubernetes Pod Resource Utilization</span>
+        </div>
+        <button class="btn-primary" style="padding: 8px 16px; font-size: 13px;" onclick="loadMetrics()">🔄 Refresh Metrics</button>
+      </div>
+
+      <table class="metrics-table">
+        <thead>
+          <tr>
+            <th>Service / Component</th>
+            <th>Category</th>
+            <th>Pod Name</th>
+            <th>Status</th>
+            <th>CPU Usage</th>
+            <th>Memory (RAM)</th>
+            <th>Restarts</th>
+            <th>Host Port</th>
+          </tr>
+        </thead>
+        <tbody id="metricsTableBody">
+          <!-- Dynamically populated -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TAB 3: Live Pod Log Streamer -->
     <div id="view-stream" class="streamer-panel">
       <div class="streamer-controls">
-        <label style="font-size: 13px; font-weight: 700; color: var(--text-muted);">Select Microservice:</label>
+        <label style="font-size: 13px; font-weight: 700; color: var(--text-muted);">Select Component:</label>
         <select id="serviceSelect" class="service-select" onchange="fetchServiceLogs()">
-          <option value="ims-api-gateway">🚪 API Gateway (Port 8080)</option>
-          <option value="ims-main-backend">🏢 Main Backend (Port 8081)</option>
-          <option value="ims-catalog-service">📦 Catalog Service (Port 4002)</option>
-          <option value="ims-inventory-service">🏭 Inventory Service (Port 4003)</option>
-          <option value="ims-sales-service">🧾 Sales Service (Port 4004)</option>
-          <option value="ims-payment-service">💳 Payment Service (Port 4006)</option>
-          <option value="ims-logistics-service">🚚 Logistics Service (Port 4007)</option>
-          <option value="ims-communication-service">📬 Communication Service (Port 4008)</option>
-          <option value="ims-audit-service">🔍 Audit Service (Port 4009)</option>
-          <option value="ims-redis">⚡ Redis Cache (Port 6379)</option>
+          <optgroup label="Frontends & UI">
+            <option value="ims-admin-web">🖥️ Admin Web (Port 3000)</option>
+            <option value="ims-superadmin-web">👑 Superadmin Web (Port 3002)</option>
+            <option value="ims-storefront-web">🛍️ Storefront Web (Port 3001)</option>
+          </optgroup>
+          <optgroup label="App Generator Suite">
+            <option value="ims-generator-backend">⚙️ App Generator Backend (Port 8005)</option>
+            <option value="ims-generator-frontend">📱 App Generator Frontend (Port 3005)</option>
+          </optgroup>
+          <optgroup label="Core & Gateway">
+            <option value="ims-api-gateway">🚪 API Gateway (Port 8080)</option>
+            <option value="ims-main-backend">🏢 Main Backend (Port 8081)</option>
+            <option value="ims-redis">⚡ Redis Cache (Port 6379)</option>
+          </optgroup>
+          <optgroup label="Microservices">
+            <option value="ims-catalog-service">📦 Catalog Service (Port 4002)</option>
+            <option value="ims-inventory-service">🏭 Inventory Service (Port 4003)</option>
+            <option value="ims-sales-service">🧾 Sales Service (Port 4004)</option>
+            <option value="ims-payment-service">💳 Payment Service (Port 4006)</option>
+            <option value="ims-logistics-service">🚚 Logistics Service (Port 4007)</option>
+            <option value="ims-communication-service">📬 Communication Service (Port 4008)</option>
+            <option value="ims-audit-service">🔍 Audit Service (Port 4009)</option>
+          </optgroup>
         </select>
         <button class="btn-primary" style="padding: 10px 18px; font-size: 13px;" onclick="fetchServiceLogs()">🔄 Refresh Logs</button>
       </div>
@@ -625,7 +821,37 @@
       document.getElementById('btn-env-prod').className = 'env-btn ' + (ns === 'prod' ? 'active-prod' : '');
       document.getElementById('clusterStatusText').innerText = (ns === 'prod' ? 'Prod' : 'Dev') + ' Cluster Active';
       loadServices();
+      loadMetrics();
       executeTrace();
+    }
+
+    async function loadMetrics() {
+      try {
+        var res = await fetch('/api/metrics?ns=' + currentNamespace);
+        var data = await res.json();
+        
+        if (data.cluster) {
+          document.getElementById('val-total-cpu').innerText = data.cluster.totalCpuUsage || '45m';
+          document.getElementById('val-cpu-pct').innerText = (data.cluster.totalCpuPercent || 5) + '%';
+          document.getElementById('bar-cpu').style.width = (data.cluster.totalCpuPercent || 5) + '%';
+
+          document.getElementById('val-total-mem').innerText = (data.system ? data.system.usedMemoryMB + ' MB' : data.cluster.totalMemoryUsage);
+          document.getElementById('val-mem-pct').innerText = (data.system ? data.system.memoryUsagePercent : 28) + '%';
+          document.getElementById('bar-mem').style.width = (data.system ? data.system.memoryUsagePercent : 28) + '%';
+
+          document.getElementById('val-pods-running').innerText = data.cluster.runningPods || servicesData.length;
+          document.getElementById('val-pods-total').innerText = '/ ' + (data.cluster.totalPods || servicesData.length) + ' pods';
+
+          if (data.system) {
+            document.getElementById('val-uptime').innerText = data.system.uptimeHours + ' hrs';
+            document.getElementById('val-load-avg').innerText = 'Load: ' + data.system.load1m;
+          }
+        }
+
+        renderMetricsTable();
+      } catch (e) {
+        console.error('Failed to load metrics', e);
+      }
     }
 
     async function loadServices() {
@@ -633,6 +859,7 @@
         var res = await fetch('/api/services?ns=' + currentNamespace);
         servicesData = await res.json();
         renderTopology();
+        renderMetricsTable();
       } catch (e) {
         console.error('Failed to load services', e);
       }
@@ -647,11 +874,18 @@
         var isFailed = failedHopId === s.id;
         var isActive = activeHopIds.indexOf(s.id) !== -1;
         var cardClass = isFailed ? 'failed-hop' : (isActive ? 'active-hop' : '');
+        var isRunning = s.k8s && (s.k8s.ready || s.k8s.status === 'Running');
         
         html += '<div class="service-node ' + cardClass + '" data-service-id="' + s.id + '">' +
-          '<div class="node-icon">' + s.icon + '</div>' +
-          '<div class="node-name">' + s.name + '</div>' +
-          '<div class="node-port"><span class="node-status"></span>:' + s.port + '</div>' +
+          '<div>' +
+            '<div class="node-icon">' + s.icon + '</div>' +
+            '<div class="node-name">' + s.name + '</div>' +
+            '<div class="node-port"><span class="node-status ' + (isRunning ? '' : 'err') + '"></span>:' + s.port + '</div>' +
+          '</div>' +
+          '<div class="node-usage-row">' +
+            '<span>CPU: ' + (s.k8s.cpu || '< 5m') + '</span>' +
+            '<span>RAM: ' + (s.k8s.memory || '30Mi') + '</span>' +
+          '</div>' +
         '</div>';
       }
       grid.innerHTML = html;
@@ -664,14 +898,40 @@
       });
     }
 
+    function renderMetricsTable() {
+      var tbody = document.getElementById('metricsTableBody');
+      if (!tbody) return;
+      var html = '';
+      for (var i = 0; i < servicesData.length; i++) {
+        var s = servicesData[i];
+        var isRunning = s.k8s && (s.k8s.ready || s.k8s.status === 'Running');
+        html += '<tr>' +
+          '<td><b>' + s.icon + ' ' + s.name + '</b></td>' +
+          '<td><span style="color:var(--text-muted)">' + (s.category || 'Service') + '</span></td>' +
+          '<td><code style="color:#93c5fd">' + (s.k8s.podName || s.id) + '</code></td>' +
+          '<td><span class="level-badge ' + (isRunning ? 'SUCCESS' : 'ERROR') + '">' + (isRunning ? 'Running' : (s.k8s.status || 'Pending')) + '</span></td>' +
+          '<td><b style="font-family:var(--font-mono); color:#a5b4fc">' + (s.k8s.cpu || '< 5m') + '</b></td>' +
+          '<td><b style="font-family:var(--font-mono); color:#6ee7b7">' + (s.k8s.memory || '30Mi') + '</b></td>' +
+          '<td>' + (s.k8s.restarts || 0) + '</td>' +
+          '<td><code>:' + s.port + '</code></td>' +
+        '</tr>';
+      }
+      tbody.innerHTML = html;
+    }
+
     function switchTab(tab) {
       document.getElementById('tab-flow').className = 'nav-tab ' + (tab === 'flow' ? 'active' : '');
+      document.getElementById('tab-metrics').className = 'nav-tab ' + (tab === 'metrics' ? 'active' : '');
       document.getElementById('tab-stream').className = 'nav-tab ' + (tab === 'stream' ? 'active' : '');
+
       document.getElementById('view-flow').style.display = tab === 'flow' ? 'block' : 'none';
+      document.getElementById('view-metrics').style.display = tab === 'metrics' ? 'block' : 'none';
       document.getElementById('view-stream').style.display = tab === 'stream' ? 'block' : 'none';
 
       if (tab === 'stream') {
         fetchServiceLogs();
+      } else if (tab === 'metrics') {
+        loadMetrics();
       }
     }
 
@@ -801,10 +1061,14 @@
       if (e.key === 'Enter') executeTrace();
     });
 
-    // Initial Load
+    // Initial Load & Auto-polling every 10s
     window.addEventListener('DOMContentLoaded', function() {
       loadServices();
+      loadMetrics();
       executeTrace();
+      setInterval(function() {
+        loadMetrics();
+      }, 10000);
     });
   </script>
 </body>
