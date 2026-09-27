@@ -192,17 +192,16 @@ case "$SERVICE" in
     ;;
 
   admin-web|ims-admin-web)
-    echo "🔄 Updating Admin Web on branch $BRANCH..."
-    if [ ! -d "/opt/ims/one-smart-inc-nextjs/.git" ]; then
-      mkdir -p /opt/ims && rm -rf /opt/ims/one-smart-inc-nextjs
-      (git clone -b $BRANCH git@github.com:arbhutale/ims-admin-web.git /opt/ims/one-smart-inc-nextjs || git clone -b $BRANCH https://github.com/arbhutale/ims-admin-web.git /opt/ims/one-smart-inc-nextjs)
-    fi
+    echo "🔄 Building & Deploying Admin Web on branch $BRANCH..."
+    mkdir -p /opt/ims/one-smart-inc-nextjs
     cd /opt/ims/one-smart-inc-nextjs
-    git fetch origin $BRANCH || true
-    git checkout $BRANCH || true
-    git pull origin $BRANCH || true
+    if [ -d ".git" ]; then
+      git fetch origin $BRANCH 2>/dev/null || true
+      git checkout $BRANCH 2>/dev/null || true
+      git pull origin $BRANCH 2>/dev/null || true
+    fi
     echo "🔨 Building ims-admin-web Docker image..."
-    docker build -t ims-admin-web:latest --build-arg NEXT_PUBLIC_API_URL=http://157.180.82.28:8080/api .
+    docker build -t ims-admin-web:latest --build-arg NEXT_PUBLIC_API_URL=http://api.smartseth.dev/api .
     docker save ims-admin-web:latest | k3s ctr images import -
     [ -f k8s/deployment.yaml ] && kubectl apply -f k8s/deployment.yaml -n $NAMESPACE
     kubectl rollout restart deployment/ims-admin-web -n $NAMESPACE
@@ -211,17 +210,16 @@ case "$SERVICE" in
     ;;
 
   superadmin-web|ims-superadmin-web)
-    echo "🔄 Updating Superadmin Web on branch $BRANCH..."
-    if [ ! -d "/opt/ims/superadmin-nextjs/.git" ]; then
-      mkdir -p /opt/ims && rm -rf /opt/ims/superadmin-nextjs
-      (git clone -b $BRANCH git@github.com:arbhutale/ims-superadmin-web.git /opt/ims/superadmin-nextjs || git clone -b $BRANCH https://github.com/arbhutale/ims-superadmin-web.git /opt/ims/superadmin-nextjs)
-    fi
+    echo "🔄 Building & Deploying Superadmin Web on branch $BRANCH..."
+    mkdir -p /opt/ims/superadmin-nextjs
     cd /opt/ims/superadmin-nextjs
-    git fetch origin $BRANCH || true
-    git checkout $BRANCH || true
-    git pull origin $BRANCH || true
+    if [ -d ".git" ]; then
+      git fetch origin $BRANCH 2>/dev/null || true
+      git checkout $BRANCH 2>/dev/null || true
+      git pull origin $BRANCH 2>/dev/null || true
+    fi
     echo "🔨 Building ims-superadmin-web Docker image..."
-    docker build -t ims-superadmin-web:latest --build-arg NEXT_PUBLIC_API_URL=http://157.180.82.28:8080/api .
+    docker build -t ims-superadmin-web:latest --build-arg NEXT_PUBLIC_API_URL=http://api.smartseth.dev/api .
     docker save ims-superadmin-web:latest | k3s ctr images import -
     [ -f k8s/deployment.yaml ] && kubectl apply -f k8s/deployment.yaml -n $NAMESPACE
     kubectl rollout restart deployment/ims-superadmin-web -n $NAMESPACE
@@ -230,17 +228,16 @@ case "$SERVICE" in
     ;;
 
   storefront-web|ims-storefront-web)
-    echo "🔄 Updating Storefront Web on branch $BRANCH..."
-    if [ ! -d "/opt/ims/storefront-nextjs/.git" ]; then
-      mkdir -p /opt/ims && rm -rf /opt/ims/storefront-nextjs
-      (git clone -b $BRANCH git@github.com:arbhutale/ims-storefront-web.git /opt/ims/storefront-nextjs || git clone -b $BRANCH https://github.com/arbhutale/ims-storefront-web.git /opt/ims/storefront-nextjs)
-    fi
+    echo "🔄 Building & Deploying Storefront Web on branch $BRANCH..."
+    mkdir -p /opt/ims/storefront-nextjs
     cd /opt/ims/storefront-nextjs
-    git fetch origin $BRANCH || true
-    git checkout $BRANCH || true
-    git pull origin $BRANCH || true
+    if [ -d ".git" ]; then
+      git fetch origin $BRANCH 2>/dev/null || true
+      git checkout $BRANCH 2>/dev/null || true
+      git pull origin $BRANCH 2>/dev/null || true
+    fi
     echo "🔨 Building ims-storefront-web Docker image..."
-    docker build -t ims-storefront-web:latest --build-arg NEXT_PUBLIC_API_URL=http://157.180.82.28:8080/api .
+    docker build -t ims-storefront-web:latest --build-arg NEXT_PUBLIC_API_URL=http://api.smartseth.dev/api .
     docker save ims-storefront-web:latest | k3s ctr images import -
     [ -f k8s/deployment.yaml ] && kubectl apply -f k8s/deployment.yaml -n $NAMESPACE
     kubectl rollout restart deployment/ims-storefront-web -n $NAMESPACE
