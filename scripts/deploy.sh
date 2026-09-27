@@ -101,6 +101,7 @@ case "$SERVICE" in
 
   admin-web|ims-admin-web)
     echo "🔄 Updating Admin Web on branch $BRANCH..."
+    cd /opt/ims/one-smart-inc-nextjs || (mkdir -p /opt/ims && git clone -b $BRANCH https://github.com/arbhutale/ims-admin-web.git /opt/ims/one-smart-inc-nextjs && cd /opt/ims/one-smart-inc-nextjs)
     cd /opt/ims/one-smart-inc-nextjs
     git fetch origin $BRANCH || true
     git checkout $BRANCH || true
@@ -108,7 +109,7 @@ case "$SERVICE" in
     echo "🔨 Building ims-admin-web Docker image..."
     docker build -t ims-admin-web:latest --build-arg NEXT_PUBLIC_API_URL=http://157.180.82.28:8080/api .
     docker save ims-admin-web:latest | k3s ctr images import -
-    kubectl apply -f /opt/ims/k8s-frontends.yaml -n $NAMESPACE
+    [ -f k8s/deployment.yaml ] && kubectl apply -f k8s/deployment.yaml -n $NAMESPACE
     kubectl rollout restart deployment/ims-admin-web -n $NAMESPACE
     kubectl rollout status deployment/ims-admin-web -n $NAMESPACE --timeout=90s || true
     echo "✅ Admin Web successfully deployed to $NAMESPACE!"
@@ -116,6 +117,7 @@ case "$SERVICE" in
 
   superadmin-web|ims-superadmin-web)
     echo "🔄 Updating Superadmin Web on branch $BRANCH..."
+    cd /opt/ims/superadmin-nextjs || (mkdir -p /opt/ims && git clone -b $BRANCH https://github.com/arbhutale/ims-superadmin-web.git /opt/ims/superadmin-nextjs && cd /opt/ims/superadmin-nextjs)
     cd /opt/ims/superadmin-nextjs
     git fetch origin $BRANCH || true
     git checkout $BRANCH || true
@@ -123,7 +125,7 @@ case "$SERVICE" in
     echo "🔨 Building ims-superadmin-web Docker image..."
     docker build -t ims-superadmin-web:latest --build-arg NEXT_PUBLIC_API_URL=http://157.180.82.28:8080/api .
     docker save ims-superadmin-web:latest | k3s ctr images import -
-    kubectl apply -f /opt/ims/k8s-frontends.yaml -n $NAMESPACE
+    [ -f k8s/deployment.yaml ] && kubectl apply -f k8s/deployment.yaml -n $NAMESPACE
     kubectl rollout restart deployment/ims-superadmin-web -n $NAMESPACE
     kubectl rollout status deployment/ims-superadmin-web -n $NAMESPACE --timeout=90s || true
     echo "✅ Superadmin Web successfully deployed to $NAMESPACE!"
@@ -131,6 +133,7 @@ case "$SERVICE" in
 
   storefront-web|ims-storefront-web)
     echo "🔄 Updating Storefront Web on branch $BRANCH..."
+    cd /opt/ims/storefront-nextjs || (mkdir -p /opt/ims && git clone -b $BRANCH https://github.com/arbhutale/ims-storefront-web.git /opt/ims/storefront-nextjs && cd /opt/ims/storefront-nextjs)
     cd /opt/ims/storefront-nextjs
     git fetch origin $BRANCH || true
     git checkout $BRANCH || true
@@ -138,7 +141,7 @@ case "$SERVICE" in
     echo "🔨 Building ims-storefront-web Docker image..."
     docker build -t ims-storefront-web:latest --build-arg NEXT_PUBLIC_API_URL=http://157.180.82.28:8080/api .
     docker save ims-storefront-web:latest | k3s ctr images import -
-    kubectl apply -f /opt/ims/k8s-frontends.yaml -n $NAMESPACE
+    [ -f k8s/deployment.yaml ] && kubectl apply -f k8s/deployment.yaml -n $NAMESPACE
     kubectl rollout restart deployment/ims-storefront-web -n $NAMESPACE
     kubectl rollout status deployment/ims-storefront-web -n $NAMESPACE --timeout=90s || true
     echo "✅ Storefront Web successfully deployed to $NAMESPACE!"
@@ -146,6 +149,7 @@ case "$SERVICE" in
 
   app-generator|ims-app-generator)
     echo "🔄 Updating App Generator on branch $BRANCH..."
+    cd /opt/ims/ims-app-generator || (mkdir -p /opt/ims && git clone -b $BRANCH https://github.com/arbhutale/ims-app-generator.git /opt/ims/ims-app-generator && cd /opt/ims/ims-app-generator)
     cd /opt/ims/ims-app-generator
     git fetch origin $BRANCH || true
     git checkout $BRANCH || true
@@ -155,7 +159,7 @@ case "$SERVICE" in
     docker save ims-generator-backend:latest | k3s ctr images import -
     cd /opt/ims/ims-app-generator/frontend && docker build -t ims-generator-frontend:latest .
     docker save ims-generator-frontend:latest | k3s ctr images import -
-    kubectl apply -f /opt/ims/k8s-app-generator.yaml -n $NAMESPACE
+    cd /opt/ims/ims-app-generator && [ -f k8s/deployments.yaml ] && kubectl apply -f k8s/deployments.yaml -n $NAMESPACE
     kubectl rollout restart deployment/ims-generator-backend -n $NAMESPACE
     kubectl rollout restart deployment/ims-generator-frontend -n $NAMESPACE
     echo "✅ App Generator successfully deployed to $NAMESPACE!"
