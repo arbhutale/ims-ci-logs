@@ -20,14 +20,5 @@ steps:
       - scp -o StrictHostKeyChecking=no /tmp/ci-logs.tar.gz root@157.180.82.28:/tmp/ci-logs.tar.gz
       - ssh -o StrictHostKeyChecking=no root@157.180.82.28 "tar -xzf /tmp/ci-logs.tar.gz -C /opt/ims/ims-ci-logs && rm -f /tmp/ci-logs.tar.gz"
       - echo "🔨 Building and deploying Tracer UI..."
-      - |
-        ssh -o StrictHostKeyChecking=no root@157.180.82.28 << 'EOF'
-          set -e
-          cd /opt/ims/ims-ci-logs
-          cp scripts/deploy.sh /opt/ims/deploy.sh && chmod +x /opt/ims/deploy.sh
-          docker build -t ims-trace-ui:latest .
-          docker save ims-trace-ui:latest | k3s ctr images import -
-          kubectl apply -f k8s/tracer-ui.yaml -n dev
-          kubectl delete pod -n dev -l app=web-log-viewer --force --grace-period=0 || true
-          echo "✅ Tracer UI successfully deployed with latest changes!"
-        EOF
+      - ssh -o StrictHostKeyChecking=no root@157.180.82.28 "cd /opt/ims/ims-ci-logs && cp scripts/deploy.sh /opt/ims/deploy.sh && chmod +x /opt/ims/deploy.sh && docker build -t ims-trace-ui:latest . && docker save ims-trace-ui:latest | k3s ctr images import - && kubectl apply -f k8s/tracer-ui.yaml -n dev && kubectl delete pod -n dev -l app=web-log-viewer --force --grace-period=0 || true"
+      - echo "✅ Tracer UI successfully deployed with latest changes!"
