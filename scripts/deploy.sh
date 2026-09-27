@@ -26,6 +26,11 @@ deploy_single_microservice() {
   local IMAGE_TAG="ims-${SVC_NAME}:latest"
   local DEPLOY_NAME="ims-${SVC_NAME}"
 
+  if [ ! -d "/opt/ims/server/.git" ]; then
+    mkdir -p /opt/ims && rm -rf /opt/ims/server
+    git clone -b $BRANCH https://github.com/arbhutale/ims-server.git /opt/ims/server
+  fi
+
   echo "🔄 Updating repository on branch $BRANCH..."
   cd /opt/ims/server
   git fetch origin $BRANCH || true
@@ -47,7 +52,10 @@ deploy_single_microservice() {
 case "$SERVICE" in
   auto|detect|changed)
     echo "🔍 Detecting changed files on branch $BRANCH..."
-    cd /opt/ims/server || (mkdir -p /opt/ims && git clone -b $BRANCH https://github.com/arbhutale/ims-server.git /opt/ims/server && cd /opt/ims/server)
+    if [ ! -d "/opt/ims/server/.git" ]; then
+      mkdir -p /opt/ims && rm -rf /opt/ims/server
+      git clone -b $BRANCH https://github.com/arbhutale/ims-server.git /opt/ims/server
+    fi
     cd /opt/ims/server
     git fetch origin $BRANCH || true
     PREV_COMMIT=$(git rev-parse HEAD~1 2>/dev/null || echo "HEAD")
@@ -179,7 +187,10 @@ case "$SERVICE" in
 
   admin-web|ims-admin-web)
     echo "🔄 Updating Admin Web on branch $BRANCH..."
-    cd /opt/ims/one-smart-inc-nextjs || (mkdir -p /opt/ims && git clone -b $BRANCH https://github.com/arbhutale/ims-admin-web.git /opt/ims/one-smart-inc-nextjs && cd /opt/ims/one-smart-inc-nextjs)
+    if [ ! -d "/opt/ims/one-smart-inc-nextjs/.git" ]; then
+      mkdir -p /opt/ims && rm -rf /opt/ims/one-smart-inc-nextjs
+      git clone -b $BRANCH https://github.com/arbhutale/ims-admin-web.git /opt/ims/one-smart-inc-nextjs
+    fi
     cd /opt/ims/one-smart-inc-nextjs
     git fetch origin $BRANCH || true
     git checkout $BRANCH || true
@@ -195,7 +206,10 @@ case "$SERVICE" in
 
   superadmin-web|ims-superadmin-web)
     echo "🔄 Updating Superadmin Web on branch $BRANCH..."
-    cd /opt/ims/superadmin-nextjs || (mkdir -p /opt/ims && git clone -b $BRANCH https://github.com/arbhutale/ims-superadmin-web.git /opt/ims/superadmin-nextjs && cd /opt/ims/superadmin-nextjs)
+    if [ ! -d "/opt/ims/superadmin-nextjs/.git" ]; then
+      mkdir -p /opt/ims && rm -rf /opt/ims/superadmin-nextjs
+      git clone -b $BRANCH https://github.com/arbhutale/ims-superadmin-web.git /opt/ims/superadmin-nextjs
+    fi
     cd /opt/ims/superadmin-nextjs
     git fetch origin $BRANCH || true
     git checkout $BRANCH || true
@@ -211,7 +225,10 @@ case "$SERVICE" in
 
   storefront-web|ims-storefront-web)
     echo "🔄 Updating Storefront Web on branch $BRANCH..."
-    cd /opt/ims/storefront-nextjs || (mkdir -p /opt/ims && git clone -b $BRANCH https://github.com/arbhutale/ims-storefront-web.git /opt/ims/storefront-nextjs && cd /opt/ims/storefront-nextjs)
+    if [ ! -d "/opt/ims/storefront-nextjs/.git" ]; then
+      mkdir -p /opt/ims && rm -rf /opt/ims/storefront-nextjs
+      git clone -b $BRANCH https://github.com/arbhutale/ims-storefront-web.git /opt/ims/storefront-nextjs
+    fi
     cd /opt/ims/storefront-nextjs
     git fetch origin $BRANCH || true
     git checkout $BRANCH || true
@@ -227,7 +244,10 @@ case "$SERVICE" in
 
   app-generator|ims-app-generator)
     echo "🔄 Updating App Generator on branch $BRANCH..."
-    cd /opt/ims/ims-app-generator || (mkdir -p /opt/ims && git clone -b $BRANCH https://github.com/arbhutale/ims-app-generator.git /opt/ims/ims-app-generator && cd /opt/ims/ims-app-generator)
+    if [ ! -d "/opt/ims/ims-app-generator/.git" ]; then
+      mkdir -p /opt/ims && rm -rf /opt/ims/ims-app-generator
+      git clone -b $BRANCH https://github.com/arbhutale/ims-app-generator.git /opt/ims/ims-app-generator
+    fi
     cd /opt/ims/ims-app-generator
     git fetch origin $BRANCH || true
     git checkout $BRANCH || true
@@ -245,7 +265,10 @@ case "$SERVICE" in
 
   tracer-ui|trace-ui|ci-logs)
     echo "🔄 Updating Tracer UI on branch $BRANCH..."
-    cd /opt/ims/ims-ci-logs || (mkdir -p /opt/ims && git clone -b $BRANCH https://github.com/arbhutale/ims-ci-logs.git /opt/ims/ims-ci-logs && cd /opt/ims/ims-ci-logs)
+    if [ ! -d "/opt/ims/ims-ci-logs/.git" ]; then
+      mkdir -p /opt/ims && rm -rf /opt/ims/ims-ci-logs
+      git clone -b $BRANCH https://github.com/arbhutale/ims-ci-logs.git /opt/ims/ims-ci-logs
+    fi
     cd /opt/ims/ims-ci-logs
     git fetch origin $BRANCH || true
     git checkout $BRANCH || true
