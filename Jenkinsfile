@@ -11,34 +11,46 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout SCM') {
             steps {
-                git branch: "${params.BRANCH}", url: 'https://github.com/arbhutale/ims-ci-logs.git'
+                git branch: "${params.BRANCH}", credentialsId: 'github-ssh', url: 'git@github.com:arbhutale/ims-ci-logs.git'
             }
         }
 
-        stage('Build Image') {
+        stage('Docker Build & Optimize') {
             steps {
+                echo "===> Building Log Viewer & Tracer..."
                 sh """
                     docker build -t ${IMAGE_NAME}:latest .
                 """
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Container Runtime Import') {
             steps {
+                echo "===> Importing Image into K3s Containerd..."
                 sh """
-                    docker save ${IMAGE_NAME}:latest | /host/bin/k3s ctr -n k8s.io images import - || docker save ${IMAGE_NAME}:latest | ctr -n k8s.io images import -
+                    docker save ${IMAGE_NAME}:latest | ctr -n k8s.io images import -
+                """
+            }
+        }
+
+        stage('Kubernetes Rolling Deployment') {
+            steps {
+                echo "===> Rolling out to Kubernetes namespace ${NAMESPACE}..."
+                sh """
                     kubectl rollout restart deployment/web-log-viewer -n ${NAMESPACE}
                     kubectl rollout status deployment/web-log-viewer -n ${NAMESPACE} --timeout=120s
                 """
             }
         }
 
-        stage('Health Check') {
+        stage('Health Check & Smoke Test') {
             steps {
                 sh """
-                    curl -s -k -o /dev/null -w "%{http_code}\n" https://logs.smartseth.com/ || true
+                    echo "=== Log Viewer Health Check ==="
+                    curl -s -k -o /dev/null -w "Tracer UI HTTP Status: %{http_code}\n" https://logs.smartseth.com/ || true
+                    kubectl get pods -n ${NAMESPACE} -l app=web-log-viewer
                 """
             }
         }
@@ -46,10 +58,10 @@ pipeline {
 
     post {
         success {
-            echo "CI Logs & Tracer UI Pipeline Completed Successfully!"
+            echo "🎉 CI Logs & Tracer UI Pipeline Completed Successfully!"
         }
         failure {
-            echo "CI Logs Pipeline Failed."
+            echo "❌ CI Logs Pipeline Failed."
         }
     }
 }
