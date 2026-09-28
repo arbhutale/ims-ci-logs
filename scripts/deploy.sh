@@ -42,7 +42,7 @@ deploy_single_microservice() {
   docker build -f $DOCKERFILE -t $IMAGE_TAG .
   
   echo "📦 Importing image into K3s containerd..."
-  docker save $IMAGE_TAG | k3s ctr images import -
+  docker save $IMAGE_TAG | k3s ctr -n k8s.io images import -
 
   echo "♻️ Restarting deployment $DEPLOY_NAME in namespace $NAMESPACE..."
   kubectl rollout restart deployment/$DEPLOY_NAME -n $NAMESPACE
@@ -74,7 +74,7 @@ case "$SERVICE" in
       if echo "$DIFF_OUTPUT" | grep -q "gateway/"; then
         echo "⚡ Building updated api-gateway image..."
         docker build -t ims-api-gateway:latest ./gateway
-        docker save ims-api-gateway:latest | k3s ctr images import -
+        docker save ims-api-gateway:latest | k3s ctr -n k8s.io images import -
       fi
       /opt/ims/deploy.sh all $NAMESPACE $BRANCH
       DELEGATED=1
@@ -118,14 +118,14 @@ case "$SERVICE" in
       if echo "$DIFF_OUTPUT" | grep -q "gateway/"; then
         echo "⚡ Building only api-gateway..."
         docker build -t ims-api-gateway:latest ./gateway
-        docker save ims-api-gateway:latest | k3s ctr images import -
+        docker save ims-api-gateway:latest | k3s ctr -n k8s.io images import -
         kubectl rollout restart deployment/ims-api-gateway -n $NAMESPACE
         DELEGATED=1
       fi
       if echo "$DIFF_OUTPUT" | grep -qE "(services/core_service/|index.js|Dockerfile)"; then
         echo "⚡ Building only main-backend..."
         docker build -t ims-main-backend:latest -f Dockerfile .
-        docker save ims-main-backend:latest | k3s ctr images import -
+        docker save ims-main-backend:latest | k3s ctr -n k8s.io images import -
         kubectl rollout restart deployment/ims-main-backend -n $NAMESPACE
         DELEGATED=1
       fi
@@ -172,7 +172,7 @@ case "$SERVICE" in
     git pull origin $BRANCH || true
     echo "🔨 Building Gateway Docker image..."
     docker build -t ims-api-gateway:latest ./gateway
-    docker save ims-api-gateway:latest | k3s ctr images import -
+    docker save ims-api-gateway:latest | k3s ctr -n k8s.io images import -
     kubectl rollout restart deployment/ims-api-gateway -n $NAMESPACE
     kubectl rollout status deployment/ims-api-gateway -n $NAMESPACE --timeout=60s || true
     echo "✅ API Gateway successfully deployed!"
@@ -185,7 +185,7 @@ case "$SERVICE" in
     git pull origin $BRANCH || true
     echo "🔨 Building Main Backend Docker image..."
     docker build -t ims-main-backend:latest -f Dockerfile .
-    docker save ims-main-backend:latest | k3s ctr images import -
+    docker save ims-main-backend:latest | k3s ctr -n k8s.io images import -
     kubectl rollout restart deployment/ims-main-backend -n $NAMESPACE
     kubectl rollout status deployment/ims-main-backend -n $NAMESPACE --timeout=60s || true
     echo "✅ Main Backend successfully deployed!"
@@ -202,7 +202,7 @@ case "$SERVICE" in
     fi
     echo "🔨 Building ims-admin-web Docker image..."
     docker build -t ims-admin-web:latest --build-arg NEXT_PUBLIC_API_URL=https://api.smartseth.com/api .
-    docker save ims-admin-web:latest | k3s ctr images import -
+    docker save ims-admin-web:latest | k3s ctr -n k8s.io images import -
     [ -f k8s/deployment.yaml ] && kubectl apply -f k8s/deployment.yaml -n $NAMESPACE
     kubectl rollout restart deployment/ims-admin-web -n $NAMESPACE
     kubectl rollout status deployment/ims-admin-web -n $NAMESPACE --timeout=90s || true
@@ -220,7 +220,7 @@ case "$SERVICE" in
     fi
     echo "🔨 Building ims-superadmin-web Docker image..."
     docker build -t ims-superadmin-web:latest --build-arg NEXT_PUBLIC_API_URL=https://api.smartseth.com/api .
-    docker save ims-superadmin-web:latest | k3s ctr images import -
+    docker save ims-superadmin-web:latest | k3s ctr -n k8s.io images import -
     [ -f k8s/deployment.yaml ] && kubectl apply -f k8s/deployment.yaml -n $NAMESPACE
     kubectl rollout restart deployment/ims-superadmin-web -n $NAMESPACE
     kubectl rollout status deployment/ims-superadmin-web -n $NAMESPACE --timeout=90s || true
@@ -238,7 +238,7 @@ case "$SERVICE" in
     fi
     echo "🔨 Building ims-storefront-web Docker image..."
     docker build -t ims-storefront-web:latest --build-arg NEXT_PUBLIC_API_URL=https://api.smartseth.com/api .
-    docker save ims-storefront-web:latest | k3s ctr images import -
+    docker save ims-storefront-web:latest | k3s ctr -n k8s.io images import -
     [ -f k8s/deployment.yaml ] && kubectl apply -f k8s/deployment.yaml -n $NAMESPACE
     kubectl rollout restart deployment/ims-storefront-web -n $NAMESPACE
     kubectl rollout status deployment/ims-storefront-web -n $NAMESPACE --timeout=90s || true
@@ -257,9 +257,9 @@ case "$SERVICE" in
     git pull origin $BRANCH || true
     echo "🔨 Building App Generator Backend & Frontend images..."
     cd /opt/ims/ims-app-generator/backend && docker build -t ims-generator-backend:latest .
-    docker save ims-generator-backend:latest | k3s ctr images import -
+    docker save ims-generator-backend:latest | k3s ctr -n k8s.io images import -
     cd /opt/ims/ims-app-generator/frontend && docker build -t ims-generator-frontend:latest .
-    docker save ims-generator-frontend:latest | k3s ctr images import -
+    docker save ims-generator-frontend:latest | k3s ctr -n k8s.io images import -
     cd /opt/ims/ims-app-generator && [ -f k8s/deployments.yaml ] && kubectl apply -f k8s/deployments.yaml -n $NAMESPACE
     kubectl rollout restart deployment/ims-generator-backend -n $NAMESPACE
     kubectl rollout restart deployment/ims-generator-frontend -n $NAMESPACE
@@ -278,7 +278,7 @@ case "$SERVICE" in
     git pull origin $BRANCH || true
     cp scripts/deploy.sh /opt/ims/deploy.sh && chmod +x /opt/ims/deploy.sh
     docker build -t ims-trace-ui:latest .
-    docker save ims-trace-ui:latest | k3s ctr images import -
+    docker save ims-trace-ui:latest | k3s ctr -n k8s.io images import -
     [ -f k8s/tracer-ui.yaml ] && kubectl apply -f k8s/tracer-ui.yaml -n dev
     kubectl delete pod -n dev -l app=web-log-viewer --force --grace-period=0 || true
     echo "✅ Tracer UI successfully deployed with latest changes!"
