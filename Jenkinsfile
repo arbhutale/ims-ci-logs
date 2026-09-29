@@ -2,24 +2,30 @@ pipeline {
     agent any
 
     parameters {
-        string(name: 'BRANCH', defaultValue: 'dev', description: 'Git branch to build')
+        string(name: 'BRANCH', defaultValue: 'dev', description: 'Git branch or release tag to build')
+        choice(
+            name: 'ENVIRONMENT',
+            choices: ['auto', 'dev', 'prod'],
+            description: 'Target Environment (auto: main/tags -> prod, dev/branches -> dev)'
+        )
     }
 
     environment {
-        NAMESPACE = 'dev'
+        NAMESPACE = "${params.ENVIRONMENT && params.ENVIRONMENT != 'auto' ? params.ENVIRONMENT : (params.BRANCH == 'main' || params.BRANCH.startsWith('v') ? 'prod' : 'dev')}"
         IMAGE_NAME = 'ims-trace-ui'
     }
 
     stages {
         stage('Checkout SCM') {
             steps {
+                echo "===> Checking out branch ${params.BRANCH} for target environment: ${env.NAMESPACE}"
                 git branch: "${params.BRANCH}", credentialsId: 'github-ssh', url: 'git@github.com:arbhutale/ims-ci-logs.git'
             }
         }
 
         stage('Docker Build & Optimize') {
             steps {
-                echo "===> Building Log Viewer & Tracer..."
+                echo "===> Building Log Viewer & Tracer for ${env.NAMESPACE}..."
                 sh """
                     docker build -t ${IMAGE_NAME}:latest .
                 """
@@ -37,10 +43,10 @@ pipeline {
 
         stage('Kubernetes Rolling Deployment') {
             steps {
-                echo "===> Rolling out to Kubernetes namespace ${NAMESPACE}..."
+                echo "===> Rolling out to Kubernetes namespace ${env.NAMESPACE}..."
                 sh """
-                    kubectl rollout restart deployment/web-log-viewer -n ${NAMESPACE}
-                    kubectl rollout status deployment/web-log-viewer -n ${NAMESPACE} --timeout=120s
+                    kubectl rollout restart deployment/web-log-viewer -n ${env.NAMESPACE}
+                    kubectl rollout status deployment/web-log-viewer -n ${env.NAMESPACE} --timeout=120s
                 """
             }
         }
@@ -49,8 +55,9 @@ pipeline {
             steps {
                 sh """
                     echo "=== Log Viewer Health Check ==="
-                    curl -s -k -o /dev/null -w "Tracer UI HTTP Status: %{http_code}\n" https://logs.smartseth.com/ || true
-                    kubectl get pods -n ${NAMESPACE} -l app=web-log-viewer
+                    LOG_HOST="${env.NAMESPACE == 'prod' ? 'https://logs.smartseth.com' : 'https://logs.smartseth.dev'}"
+                    curl -s -k -o /dev/null -w "Tracer UI HTTP Status: %{http_code}\n" "\${LOG_HOST}/" || true
+                    kubectl get pods -n ${env.NAMESPACE} -l app=web-log-viewer
                 """
             }
         }
@@ -58,10 +65,10 @@ pipeline {
 
     post {
         success {
-            echo "🎉 CI Logs & Tracer UI Pipeline Completed Successfully!"
+            echo "🎉 CI Logs & Tracer UI Pipeline Completed Successfully for [${env.NAMESPACE}] environment!"
         }
         failure {
-            echo "❌ CI Logs Pipeline Failed."
+            echo "❌ CI Logs Pipeline Failed for [${env.NAMESPACE}] environment."
         }
     }
 }
