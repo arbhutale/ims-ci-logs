@@ -1,365 +1,503 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>SmartSeth | Cluster Topology, Observability & Pod Manager</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    /* ==========================================================================
+       THEME DESIGN SYSTEM (DARK & LIGHT MODE)
+       ========================================================================== */
     :root {
+      /* Shared Accent Palette */
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-subtle: rgba(99, 102, 241, 0.12);
+      --accent: #0ea5e9;
+      --accent-hover: #0284c7;
+      --success: #10b981;
+      --success-subtle: rgba(16, 185, 129, 0.14);
+      --warn: #f59e0b;
+      --warn-subtle: rgba(245, 158, 11, 0.14);
+      --error: #ef4444;
+      --error-subtle: rgba(239, 68, 68, 0.14);
+      --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.15);
+      --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* DARK THEME (Default) */
+    [data-theme="dark"] {
       --bg-base: #06090e;
       --bg-surface: #0c111a;
-      --bg-card: #121826;
+      --bg-card: #111827;
       --bg-card-hover: #172133;
+      --bg-input: #090d16;
+      --bg-elevated: #1e293b;
       --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.16);
       --border-focus: #6366f1;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --text-dim: #64748b;
-      --primary: #6366f1;
-      --primary-hover: #4f46e5;
-      --accent: #38bdf8;
-      --success: #10b981;
-      --warn: #f59e0b;
-      --error: #ef4444;
-      --font-main: 'Inter', system-ui, -apple-system, sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
+      --nav-bg: rgba(12, 17, 26, 0.88);
+      --terminal-bg: #05070a;
+      --terminal-text: #e2e8f0;
+      --terminal-border: rgba(255, 255, 255, 0.08);
+      --table-hover: rgba(255, 255, 255, 0.03);
+      --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      --glow-color: rgba(99, 102, 241, 0.3);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
+    /* LIGHT THEME */
+    [data-theme="light"] {
+      --bg-base: #f1f5f9;
+      --bg-surface: #ffffff;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f8fafc;
+      --bg-input: #f8fafc;
+      --bg-elevated: #e2e8f0;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --border-focus: #6366f1;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-dim: #94a3b8;
+      --nav-bg: rgba(255, 255, 255, 0.9);
+      --terminal-bg: #0f172a;
+      --terminal-text: #f8fafc;
+      --terminal-border: #1e293b;
+      --table-hover: #f8fafc;
+      --card-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+      --glow-color: rgba(99, 102, 241, 0.15);
+    }
+
+    /* Base Reset */
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      min-height: 100vh;
       background-color: var(--bg-base);
       color: var(--text-main);
       font-family: var(--font-main);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      font-size: 14px;
+      line-height: 1.5;
+      transition: background-color 0.25s ease, color 0.25s ease;
       -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    /* Top Navigation Bar */
+    /* ==========================================================================
+       TOP NAVIGATION BAR
+       ========================================================================== */
     .navbar {
-      background: rgba(12, 17, 26, 0.85);
+      background: var(--nav-bg);
       backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
-      padding: 12px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
       position: sticky;
       top: 0;
       z-index: 100;
-      gap: 16px;
-    }
-    .nav-brand {
+      padding: 10px 20px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: space-between;
+      gap: 16px;
+      transition: var(--transition);
     }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+    }
+
+    .brand-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: inherit;
+    }
+
     .brand-logo {
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
       border-radius: 10px;
-      background: linear-gradient(135deg, #6366f1, #38bdf8);
+      background: linear-gradient(135deg, #6366f1, #0ea5e9);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
-      box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
-    }
-    .brand-title {
-      font-size: 16px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      color: #fff;
+      font-size: 18px;
+      box-shadow: 0 4px 14px var(--glow-color);
+      flex-shrink: 0;
     }
 
-    /* Dynamic Environment Toggle */
+    .brand-title {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Environment Switcher Pill */
     .env-toggle {
       display: inline-flex;
-      background: #06090e;
+      background: var(--bg-input);
       border: 1px solid var(--border);
       border-radius: 30px;
       padding: 3px;
       gap: 2px;
-      margin-left: 10px;
     }
+
     .env-btn {
       background: transparent;
       border: none;
-      padding: 5px 14px;
+      padding: 4px 12px;
       border-radius: 20px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       color: var(--text-muted);
       cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      letter-spacing: 0.05em;
+      transition: var(--transition);
+      letter-spacing: 0.04em;
     }
+
     .env-btn.active-dev {
       background: linear-gradient(135deg, #0284c7, #0369a1);
       color: #fff;
-      box-shadow: 0 0 14px rgba(56, 189, 248, 0.4);
+      box-shadow: 0 2px 10px rgba(14, 165, 233, 0.4);
     }
+
     .env-btn.active-prod {
       background: linear-gradient(135deg, #059669, #047857);
       color: #fff;
-      box-shadow: 0 0 14px rgba(16, 185, 129, 0.4);
+      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4);
     }
 
     /* Navigation Tabs */
     .nav-tabs {
       display: flex;
-      gap: 6px;
-      background: #080c14;
-      padding: 4px;
+      gap: 4px;
+      background: var(--bg-input);
+      padding: 3px;
       border-radius: 12px;
       border: 1px solid var(--border);
+      overflow-x: auto;
+      scrollbar-width: none;
     }
+    .nav-tabs::-webkit-scrollbar { display: none; }
+
     .nav-tab {
-      padding: 8px 16px;
+      padding: 7px 14px;
       border-radius: 8px;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 600;
       color: var(--text-muted);
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: var(--transition);
       display: flex;
       align-items: center;
       gap: 6px;
-    }
-    .nav-tab:hover {
-      color: #fff;
-      background: rgba(255, 255, 255, 0.04);
-    }
-    .nav-tab.active {
-      background: #1e293b;
-      color: #fff;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      white-space: nowrap;
+      user-select: none;
     }
 
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+    .nav-tab:hover {
+      color: var(--text-main);
+      background: rgba(99, 102, 241, 0.08);
     }
-    .live-indicator {
+
+    .nav-tab.active {
+      background: var(--bg-card);
+      color: var(--text-main);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+    }
+
+    /* Right Controls */
+    .nav-right {
       display: flex;
       align-items: center;
       gap: 8px;
-      background: rgba(16, 185, 129, 0.1);
+      flex-shrink: 0;
+    }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--success-subtle);
       border: 1px solid rgba(16, 185, 129, 0.3);
-      padding: 6px 12px;
+      padding: 5px 10px;
       border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #6ee7b7;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--success);
+      white-space: nowrap;
     }
+
     .pulse-dot {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
-      background: #10b981;
-      box-shadow: 0 0 10px #10b981;
-      animation: pulse 2s infinite;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+      animation: pulseAnim 2s infinite;
     }
-    @keyframes pulse {
+
+    @keyframes pulseAnim {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.4; transform: scale(0.85); }
     }
 
-    .btn-refresh {
-      background: #1e293b;
+    .btn-icon {
+      background: var(--bg-input);
       border: 1px solid var(--border);
-      color: #f8fafc;
-      padding: 7px 14px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
+      color: var(--text-main);
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
       align-items: center;
-      gap: 6px;
-      transition: all 0.15s ease;
-    }
-    .btn-refresh:hover {
-      background: #334155;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 15px;
+      transition: var(--transition);
     }
 
-    /* Main Container */
-    .main-content {
-      flex: 1;
+    .btn-icon:hover {
+      background: var(--bg-elevated);
+      border-color: var(--border-strong);
+      transform: translateY(-1px);
+    }
+
+    /* ==========================================================================
+       MAIN CONTAINER & LAYOUT
+       ========================================================================== */
+    .main-container {
       max-width: 1600px;
       width: 100%;
       margin: 0 auto;
-      padding: 24px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: 20px;
     }
 
-    /* Metrics Stat Banner */
+    /* ==========================================================================
+       METRICS STATS BANNER (RESPONSIVE GRID)
+       ========================================================================== */
     .metrics-banner {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 16px;
+      gap: 14px;
     }
+
     .metric-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
       position: relative;
       overflow: hidden;
+      box-shadow: var(--card-shadow);
+      transition: var(--transition);
     }
+
     .metric-card::before {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, #6366f1, #38bdf8);
+      top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
     }
+
+    .metric-card.success-accent::before {
+      background: linear-gradient(90deg, #10b981, #059669);
+    }
+
     .metric-title {
-      font-size: 12px;
-      font-weight: 600;
+      font-size: 11px;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-muted);
     }
+
     .metric-value-row {
       display: flex;
       align-items: baseline;
-      gap: 8px;
+      justify-content: space-between;
     }
+
     .metric-value {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 800;
       font-family: var(--font-mono);
-      color: #fff;
+      color: var(--text-main);
     }
+
     .metric-sub {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--accent);
-      font-weight: 600;
+      font-weight: 700;
       font-family: var(--font-mono);
     }
+
     .metric-progress {
       height: 4px;
-      background: rgba(255, 255, 255, 0.06);
+      background: var(--bg-input);
       border-radius: 4px;
       overflow: hidden;
       margin-top: 4px;
     }
+
     .metric-progress-bar {
       height: 100%;
-      background: #6366f1;
-      transition: width 0.3s ease;
+      background: var(--primary);
+      transition: width 0.4s ease;
     }
 
-    /* Section Header */
+    /* ==========================================================================
+       PANEL & CARD LAYOUTS
+       ========================================================================== */
+    .panel-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      box-shadow: var(--card-shadow);
+    }
+
     .section-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
       flex-wrap: wrap;
       gap: 12px;
     }
+
     .section-title {
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 800;
-      color: #fff;
+      color: var(--text-main);
     }
 
-    /* Topology Grid */
-    .topology-container {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 24px;
+    .section-desc {
+      font-size: 12px;
+      color: var(--text-muted);
     }
+
+    /* Filter & Search Bar */
     .filter-bar {
       display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
+      gap: 10px;
+      margin-bottom: 18px;
       flex-wrap: wrap;
       align-items: center;
     }
-    .filter-input {
-      background: #090d16;
+
+    .search-input {
+      background: var(--bg-input);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
       padding: 8px 14px;
-      color: #fff;
+      color: var(--text-main);
       font-size: 13px;
-      min-width: 260px;
+      min-width: 240px;
       outline: none;
-    }
-    .filter-input:focus {
-      border-color: var(--primary);
+      transition: var(--transition);
+      font-family: inherit;
     }
 
+    .search-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+
+    /* ==========================================================================
+       TOPOLOGY GRID & SERVICE CARDS
+       ========================================================================== */
     .topology-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
       gap: 16px;
     }
+
     .service-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 18px;
+      border-radius: var(--radius-md);
+      padding: 16px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      gap: 14px;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
+      gap: 12px;
+      transition: var(--transition);
+      box-shadow: var(--shadow-sm);
     }
+
     .service-card:hover {
-      background: var(--bg-card-hover);
       border-color: rgba(99, 102, 241, 0.4);
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      box-shadow: var(--shadow-md);
     }
+
     .card-top {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
       gap: 10px;
     }
+
     .card-icon-title {
       display: flex;
       align-items: center;
       gap: 10px;
     }
+
     .service-icon {
-      font-size: 26px;
-      width: 44px;
-      height: 44px;
+      font-size: 22px;
+      width: 40px;
+      height: 40px;
       border-radius: 10px;
-      background: #090d16;
+      background: var(--bg-input);
       display: flex;
       align-items: center;
       justify-content: center;
       border: 1px solid var(--border);
+      flex-shrink: 0;
     }
+
     .service-name {
       font-weight: 700;
-      font-size: 15px;
-      color: #fff;
+      font-size: 14.5px;
+      color: var(--text-main);
     }
+
     .service-category {
       font-size: 11px;
       color: var(--text-muted);
-      margin-top: 1px;
     }
 
     .badge-group {
@@ -367,48 +505,54 @@
       flex-direction: column;
       align-items: flex-end;
       gap: 4px;
+      flex-shrink: 0;
     }
+
     .status-badge {
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 700;
       padding: 3px 8px;
       border-radius: 6px;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
       font-family: var(--font-mono);
     }
+
     .status-badge.Running {
-      background: rgba(16, 185, 129, 0.15);
-      color: #34d399;
+      background: var(--success-subtle);
+      color: var(--success);
       border: 1px solid rgba(16, 185, 129, 0.3);
     }
+
     .status-badge.Stopped {
       background: rgba(148, 163, 184, 0.15);
-      color: #94a3b8;
+      color: var(--text-muted);
       border: 1px solid rgba(148, 163, 184, 0.3);
     }
+
     .status-badge.Pending, .status-badge.Restarting {
-      background: rgba(245, 158, 11, 0.15);
-      color: #fbbf24;
+      background: var(--warn-subtle);
+      color: var(--warn);
       border: 1px solid rgba(245, 158, 11, 0.3);
     }
+
     .status-badge.Failed, .status-badge.CrashLoopBackOff {
-      background: rgba(239, 68, 68, 0.15);
-      color: #f87171;
+      background: var(--error-subtle);
+      color: var(--error);
       border: 1px solid rgba(239, 68, 68, 0.3);
     }
 
     .env-tag {
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 800;
       padding: 2px 6px;
       border-radius: 4px;
       letter-spacing: 0.05em;
     }
-    .env-tag.DEV { background: #082f49; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
-    .env-tag.PROD { background: #064e3b; color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .env-tag.GLOBAL, .env-tag.SHARED { background: #451a03; color: #fde047; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .env-tag.DEV { background: rgba(14, 165, 233, 0.15); color: #0284c7; border: 1px solid rgba(14, 165, 233, 0.3); }
+    .env-tag.PROD { background: rgba(16, 185, 129, 0.15); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .env-tag.SHARED { background: rgba(245, 158, 11, 0.15); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); }
 
     .service-desc {
       font-size: 12px;
@@ -420,313 +564,432 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: #090d16;
+      background: var(--bg-input);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
       padding: 6px 10px;
-      font-size: 12px;
+      font-size: 11.5px;
       font-family: var(--font-mono);
     }
+
     .domain-url {
       color: var(--accent);
       text-decoration: none;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 210px;
+      max-width: 220px;
+      font-weight: 600;
     }
-    .domain-url:hover {
-      text-decoration: underline;
-    }
+    .domain-url:hover { text-decoration: underline; }
+
     .btn-copy {
       background: transparent;
       border: none;
       color: var(--text-muted);
       cursor: pointer;
       font-size: 13px;
+      padding: 2px 4px;
     }
-    .btn-copy:hover { color: #fff; }
+    .btn-copy:hover { color: var(--text-main); }
 
     .resource-row {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-      background: #090d16;
-      padding: 8px 12px;
-      border-radius: 8px;
+      gap: 6px;
+      background: var(--bg-input);
+      padding: 7px 10px;
+      border-radius: var(--radius-sm);
       font-size: 11px;
       font-family: var(--font-mono);
     }
+
     .resource-col {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 1px;
     }
+
     .resource-label {
       color: var(--text-dim);
-      font-size: 10px;
+      font-size: 9.5px;
       text-transform: uppercase;
+      font-weight: 600;
     }
+
     .resource-val {
-      color: #fff;
+      color: var(--text-main);
       font-weight: 700;
     }
 
-    /* Action Buttons on Cards */
+    /* Card Action Buttons */
     .card-actions {
       display: flex;
       gap: 6px;
       border-top: 1px solid var(--border);
-      padding-top: 12px;
+      padding-top: 10px;
     }
+
     .btn-action {
       flex: 1;
       padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 12px;
+      border-radius: var(--radius-sm);
+      font-size: 11.5px;
       font-weight: 600;
       border: 1px solid var(--border);
-      background: #1e293b;
-      color: #f8fafc;
+      background: var(--bg-elevated);
+      color: var(--text-main);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 4px;
-      transition: all 0.15s ease;
-    }
-    .btn-action:hover {
-      background: #334155;
-    }
-    .btn-action.restart:hover {
-      background: #312e81;
-      color: #a5b4fc;
-      border-color: #4f46e5;
-    }
-    .btn-action.stop:hover {
-      background: #7f1d1d;
-      color: #fca5a5;
-      border-color: #b91c1c;
-    }
-    .btn-action.start:hover {
-      background: #064e3b;
-      color: #86efac;
-      border-color: #059669;
+      transition: var(--transition);
+      white-space: nowrap;
     }
 
-    /* Table Panels */
-    .panel-view {
-      display: none;
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 24px;
+    .btn-action:hover {
+      background: var(--border-strong);
     }
+
+    .btn-action.restart:hover {
+      background: rgba(99, 102, 241, 0.2);
+      color: #6366f1;
+      border-color: #6366f1;
+    }
+
+    .btn-action.stop:hover {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      border-color: #ef4444;
+    }
+
+    .btn-action.start:hover {
+      background: rgba(16, 185, 129, 0.2);
+      color: #10b981;
+      border-color: #10b981;
+    }
+
+    /* ==========================================================================
+       DATA TABLES (DESKTOP & IPAD)
+       ========================================================================== */
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+    }
+
     .data-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 13px;
-    }
-    .data-table th {
       text-align: left;
-      padding: 12px 14px;
-      color: var(--text-muted);
-      border-bottom: 1px solid var(--border);
-      font-weight: 700;
-      text-transform: uppercase;
-      font-size: 11px;
-      letter-spacing: 0.05em;
-    }
-    .data-table td {
-      padding: 14px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-      color: #e2e8f0;
-    }
-    .data-table tr:hover td {
-      background: #131b2e;
     }
 
-    /* Log Streamer Panel */
-    .streamer-controls {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
+    .data-table th {
+      background: var(--bg-input);
+      padding: 12px 14px;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 10.5px;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
     }
-    .service-select {
-      background: #090d16;
-      border: 1px solid #2d3748;
-      border-radius: 8px;
-      padding: 9px 14px;
-      color: #fff;
-      font-size: 13px;
+
+    .data-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-main);
+      vertical-align: middle;
+    }
+
+    .data-table tr:hover td {
+      background: var(--table-hover);
+    }
+
+    /* Mobile Pod Cards Container (Hidden on Desktop) */
+    .mobile-pods-list {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* ==========================================================================
+       LIVE LOG STREAMER & TERMINAL
+       ========================================================================== */
+    .streamer-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+      background: var(--bg-input);
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+    }
+
+    .toolbar-left, .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .select-dropdown {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 7px 12px;
+      color: var(--text-main);
+      font-size: 12.5px;
       font-weight: 600;
       outline: none;
-      min-width: 260px;
+      cursor: pointer;
     }
-    .log-terminal {
-      background: #05070a;
+
+    .log-filter-btn {
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
       border: 1px solid var(--border);
-      border-radius: 12px;
+      background: var(--bg-card);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .log-filter-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .log-terminal {
+      background: var(--terminal-bg);
+      border: 1px solid var(--terminal-border);
+      border-radius: var(--radius-md);
       padding: 16px;
       height: 600px;
       overflow-y: auto;
       font-family: var(--font-mono);
-      font-size: 13px;
+      font-size: 12px;
       line-height: 1.6;
-      color: #e2e8f0;
+      color: var(--terminal-text);
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.4);
     }
 
-    /* Flow Tracer */
-    .search-panel {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 20px;
-      margin-bottom: 20px;
+    .log-line {
+      white-space: pre-wrap;
+      word-break: break-all;
+      padding: 2px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.02);
     }
-    .search-input-group {
-      display: flex;
-      gap: 12px;
-    }
-    .search-input {
-      flex: 1;
-      background: #090d16;
-      border: 1px solid #2d3748;
-      border-radius: 8px;
-      padding: 12px 18px;
-      color: #fff;
-      font-size: 14px;
-      outline: none;
-    }
-    .btn-primary {
-      background: var(--primary);
-      border: none;
-      color: #fff;
-      font-weight: 700;
-      padding: 12px 24px;
-      border-radius: 8px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: background 0.15s ease;
-    }
-    .btn-primary:hover {
-      background: var(--primary-hover);
-    }
+    .log-line.err { color: #f87171; background: rgba(239, 68, 68, 0.08); font-weight: 600; }
+    .log-line.warn { color: #fbbf24; background: rgba(245, 158, 11, 0.08); }
+    .log-line.succ { color: #34d399; }
+
+    /* ==========================================================================
+       FLOW TRACER
+       ========================================================================== */
     .quick-chips {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       flex-wrap: wrap;
-      margin-top: 14px;
+      margin-top: 10px;
       align-items: center;
     }
+
     .chip {
-      background: #1e293b;
+      background: var(--bg-elevated);
       border: 1px solid var(--border);
-      padding: 5px 12px;
+      padding: 4px 10px;
       border-radius: 20px;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 600;
-      color: #cbd5e1;
+      color: var(--text-muted);
       cursor: pointer;
+      transition: var(--transition);
     }
+
     .chip:hover {
-      background: #334155;
-      color: #fff;
+      background: var(--border-strong);
+      color: var(--text-main);
     }
 
     .timeline {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
+      margin-top: 14px;
     }
+
     .timeline-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
+      border-radius: var(--radius-md);
+      padding: 14px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
     }
-    .timeline-card.error { border-left: 4px solid var(--error); background: #1a0f14; }
+
+    .timeline-card.error { border-left: 4px solid var(--error); background: var(--error-subtle); }
     .timeline-card.warn { border-left: 4px solid var(--warn); }
     .timeline-card.success { border-left: 4px solid var(--success); }
 
-    /* Toast Notifications */
+    /* ==========================================================================
+       TOAST NOTIFICATIONS
+       ========================================================================== */
     .toast-container {
       position: fixed;
-      bottom: 24px;
-      right: 24px;
+      bottom: 20px;
+      right: 20px;
       z-index: 1000;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
+      pointer-events: none;
     }
+
     .toast {
-      background: #1e293b;
+      background: var(--bg-card);
       border: 1px solid var(--border);
-      padding: 12px 20px;
-      border-radius: 10px;
-      color: #fff;
-      font-size: 13px;
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      color: var(--text-main);
+      font-size: 12.5px;
       font-weight: 600;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      animation: slideUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: var(--shadow-lg);
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      pointer-events: auto;
+      animation: toastIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
+
     .toast.success { border-left: 4px solid var(--success); }
     .toast.error { border-left: 4px solid var(--error); }
-    @keyframes slideUp {
-      from { transform: translateY(20px); opacity: 0; }
+
+    @keyframes toastIn {
+      from { transform: translateY(15px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* ==========================================================================
+       MOBILE & TABLET / IPAD RESPONSIVENESS (BREAKPOINTS)
+       ========================================================================== */
+    @media (max-width: 900px) {
+      .navbar {
+        flex-wrap: wrap;
+        padding: 10px 14px;
+        gap: 10px;
+      }
+      .nav-tabs {
+        order: 3;
+        width: 100%;
+        justify-content: flex-start;
+      }
+      .main-container {
+        padding: 14px;
+        gap: 14px;
+      }
+      .metrics-banner {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .metrics-banner {
+        grid-template-columns: 1fr;
+      }
+      .topology-grid {
+        grid-template-columns: 1fr;
+      }
+      /* Hide desktop tables, show mobile card list on phone */
+      .desktop-table {
+        display: none !important;
+      }
+      .mobile-pods-list {
+        display: flex !important;
+      }
+      .log-terminal {
+        height: 460px;
+      }
+      .streamer-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .toolbar-left, .toolbar-right {
+        width: 100%;
+        justify-content: space-between;
+      }
     }
   </style>
 </head>
 <body>
 
-  <!-- Navigation Bar -->
+  <!-- ==========================================================================
+       HEADER & NAVIGATION BAR
+       ========================================================================== -->
   <header class="navbar">
-    <div class="nav-brand">
-      <div class="brand-logo">⚡</div>
-      <div>
-        <div style="display: flex; align-items: center;">
-          <span class="brand-title">SmartSeth Observability</span>
-          <div class="env-toggle">
-            <button class="env-btn active-dev" id="btn-env-dev" onclick="switchNamespace('dev')">DEV (.dev)</button>
-            <button class="env-btn" id="btn-env-prod" onclick="switchNamespace('prod')">PROD (.com)</button>
+    <div class="nav-left">
+      <div class="brand-box">
+        <div class="brand-logo">⚡</div>
+        <div>
+          <div class="brand-title">
+            <span>SmartSeth</span>
+            <span style="font-weight: 400; color: var(--text-muted); font-size: 13px;">Observability</span>
           </div>
         </div>
       </div>
+
+      <!-- Environment Selector -->
+      <div class="env-toggle">
+        <button class="env-btn active-dev" id="btn-env-dev" onclick="switchNamespace('dev')">DEV (.dev)</button>
+        <button class="env-btn" id="btn-env-prod" onclick="switchNamespace('prod')">PROD (.com)</button>
+      </div>
     </div>
 
-    <div class="nav-tabs">
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
       <div class="nav-tab active" id="tab-topology" onclick="switchTab('topology')">🗺️ Topology</div>
       <div class="nav-tab" id="tab-pods" onclick="switchTab('pods')">⚡ Pod Controls</div>
       <div class="nav-tab" id="tab-events" onclick="switchTab('events')">📢 Activity Feed</div>
       <div class="nav-tab" id="tab-stream" onclick="switchTab('stream')">📜 Live Logs</div>
       <div class="nav-tab" id="tab-flow" onclick="switchTab('flow')">🔍 Flow Tracer</div>
-    </div>
+    </nav>
 
-    <div class="nav-actions">
-      <div class="live-indicator">
+    <!-- Right Controls -->
+    <div class="nav-right">
+      <div class="live-badge">
         <div class="pulse-dot"></div>
-        <span id="clusterStatusText">Dev Cluster Active</span>
+        <span id="clusterStatusText">Dev Active</span>
       </div>
-      <button class="btn-refresh" onclick="refreshAll()">🔄 Refresh</button>
+
+      <!-- Theme Switcher Button -->
+      <button class="btn-icon" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Light / Dark Mode">
+        <span id="themeIcon">🌙</span>
+      </button>
+
+      <!-- Manual Refresh Button -->
+      <button class="btn-icon" onclick="refreshAll()" title="Refresh Cluster Data">
+        <span>🔄</span>
+      </button>
     </div>
   </header>
 
-  <!-- Main Content Area -->
-  <main class="main-content">
+  <!-- ==========================================================================
+       MAIN CONTENT
+       ========================================================================== -->
+  <main class="main-container">
 
-    <!-- Cluster Resource Metrics Banner -->
-    <div class="metrics-banner">
+    <!-- Cluster Hardware & Status Metrics Banner -->
+    <section class="metrics-banner">
       <div class="metric-card">
         <div class="metric-title">Cluster CPU Usage</div>
         <div class="metric-value-row">
@@ -735,184 +998,267 @@
         </div>
         <div class="metric-progress"><div class="metric-progress-bar" id="bar-cpu" style="width: 0%"></div></div>
       </div>
+
       <div class="metric-card">
-        <div class="metric-title">Cluster Memory (RAM)</div>
+        <div class="metric-title">Cluster RAM Memory</div>
         <div class="metric-value-row">
           <div class="metric-value" id="val-total-mem">--</div>
           <div class="metric-sub" id="val-mem-pct">--%</div>
         </div>
-        <div class="metric-progress"><div class="metric-progress-bar" id="bar-mem" style="width: 0%; background: linear-gradient(90deg, #38bdf8, #10b981)"></div></div>
+        <div class="metric-progress"><div class="metric-progress-bar" id="bar-mem" style="width: 0%; background: linear-gradient(90deg, #0ea5e9, #10b981)"></div></div>
       </div>
-      <div class="metric-card">
+
+      <div class="metric-card success-accent">
         <div class="metric-title">Pod Health Ratio</div>
         <div class="metric-value-row">
           <div class="metric-value" id="val-pods-running">--</div>
           <div class="metric-sub" id="val-pods-total">/ -- total</div>
         </div>
-        <div class="metric-progress"><div class="metric-progress-bar" id="bar-pods" style="width: 100%; background: #10b981"></div></div>
+        <div class="metric-progress"><div class="metric-progress-bar" id="bar-pods" style="width: 100%; background: var(--success)"></div></div>
       </div>
+
       <div class="metric-card">
         <div class="metric-title">Host Server Uptime</div>
         <div class="metric-value-row">
           <div class="metric-value" id="val-uptime">-- hrs</div>
           <div class="metric-sub" id="val-load-avg">Load: --</div>
         </div>
-        <div class="metric-progress"><div class="metric-progress-bar" style="width: 100%; background: #6366f1"></div></div>
+        <div class="metric-progress"><div class="metric-progress-bar" style="width: 100%; background: var(--primary)"></div></div>
       </div>
-    </div>
+    </section>
 
-    <!-- TAB 1: Topology Grid View -->
-    <div id="view-topology" class="topology-container">
+    <!-- ==========================================================================
+         TAB 1: TOPOLOGY GRID
+         ========================================================================== -->
+    <section id="view-topology" class="panel-container">
       <div class="section-header">
-        <div class="section-title">
-          <span>🗺️ Microservices, Frontends & Shared Infrastructure</span>
-        </div>
-        <div id="topologySubtitle" style="font-size: 12px; color: var(--text-muted);">
-          Viewing <b style="color:#38bdf8">DEV</b> Cluster (*.smartseth.dev)
+        <div>
+          <div class="section-title">🗺️ Microservices, Frontends & Infrastructure</div>
+          <div class="section-desc" id="topologySubtitle">Viewing DEV Cluster (*.smartseth.dev)</div>
         </div>
       </div>
 
       <div class="filter-bar">
-        <input type="text" id="topologyFilterInput" class="filter-input" placeholder="Filter services by name, port, or category..." oninput="filterTopology()" />
+        <input type="text" id="topologyFilterInput" class="search-input" placeholder="Filter services by name, port, or category..." oninput="filterTopology()" />
       </div>
 
       <div class="topology-grid" id="topologyGrid">
-        <!-- Dynamically populated -->
+        <!-- Dynamically Populated -->
       </div>
-    </div>
+    </section>
 
-    <!-- TAB 2: Pod Controls & Management Table -->
-    <div id="view-pods" class="panel-view">
+    <!-- ==========================================================================
+         TAB 2: POD CONTROLLER
+         ========================================================================== -->
+    <section id="view-pods" class="panel-container" style="display: none;">
       <div class="section-header">
-        <div class="section-title">
-          <span>⚡ Live Kubernetes Pod Controller & Status</span>
+        <div>
+          <div class="section-title">⚡ Live Kubernetes Pod Controller & Status</div>
+          <div class="section-desc">Rolling restarts, live scaling (0/1 replicas), CPU/Memory inspection</div>
         </div>
-        <div style="font-size: 12px; color: var(--text-muted);">Instant rolling restarts, scaling, and container inspection</div>
       </div>
 
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Service</th>
-            <th>Category</th>
-            <th>Status</th>
-            <th>Pod Name</th>
-            <th>CPU</th>
-            <th>Memory</th>
-            <th>Restarts</th>
-            <th>Age</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="podsTableBody">
-          <!-- Dynamically populated -->
-        </tbody>
-      </table>
-    </div>
+      <!-- Desktop & iPad Table View -->
+      <div class="table-wrapper desktop-table">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Service</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th>Pod Name</th>
+              <th>CPU</th>
+              <th>RAM</th>
+              <th>Restarts</th>
+              <th>Age</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="podsTableBody">
+            <!-- Dynamically Populated -->
+          </tbody>
+        </table>
+      </div>
 
-    <!-- TAB 3: Real-Time Kubernetes Activity & Events Feed -->
-    <div id="view-events" class="panel-view">
+      <!-- Mobile Pod Cards View -->
+      <div class="mobile-pods-list" id="mobilePodsList">
+        <!-- Dynamically Populated -->
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         TAB 3: REAL-TIME ACTIVITY & EVENTS FEED
+         ========================================================================== -->
+    <section id="view-events" class="panel-container" style="display: none;">
       <div class="section-header">
-        <div class="section-title">
-          <span>📢 Real-Time Kubernetes Cluster Activity & Events</span>
+        <div>
+          <div class="section-title">📢 Real-Time Kubernetes Cluster Activity & Events</div>
+          <div class="section-desc">Live cluster pod scheduling, health probe failures, and image pulls</div>
         </div>
-        <button class="btn-refresh" onclick="loadEvents()">🔄 Refresh Events</button>
+        <button class="btn-action" onclick="loadEvents()">🔄 Refresh Events</button>
       </div>
 
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Type</th>
-            <th>Reason</th>
-            <th>Object</th>
-            <th>Message</th>
-            <th>Age</th>
-            <th>Count</th>
-          </tr>
-        </thead>
-        <tbody id="eventsTableBody">
-          <!-- Dynamically populated -->
-        </tbody>
-      </table>
-    </div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Reason</th>
+              <th>Component</th>
+              <th>Message</th>
+              <th>Age</th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody id="eventsTableBody">
+            <!-- Dynamically Populated -->
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-    <!-- TAB 4: Live Log Streamer -->
-    <div id="view-stream" class="panel-view">
-      <div class="streamer-controls">
-        <label style="font-size: 13px; font-weight: 700; color: var(--text-muted);">Select Service:</label>
-        <select id="serviceSelect" class="service-select" onchange="fetchServiceLogs()">
-          <optgroup label="Core & Gateway">
-            <option value="ims-api-gateway">🚪 API Gateway (Port 8080)</option>
-            <option value="ims-main-backend">🏢 Main Backend (Port 8081)</option>
-            <option value="ims-redis">⚡ Redis Cache (Port 6379)</option>
-          </optgroup>
-          <optgroup label="Microservices">
-            <option value="ims-catalog-service">📦 Catalog Service (Port 4002)</option>
-            <option value="ims-inventory-service">🏭 Inventory Service (Port 4003)</option>
-            <option value="ims-sales-service">🧾 Sales Service (Port 4004)</option>
-            <option value="ims-payment-service">💳 Payment Service (Port 4006)</option>
-            <option value="ims-logistics-service">🚚 Logistics Service (Port 4007)</option>
-            <option value="ims-communication-service">📬 Communication Service (Port 4008)</option>
-            <option value="ims-audit-service">🔍 Audit Service (Port 4009)</option>
-          </optgroup>
-          <optgroup label="Frontends">
-            <option value="ims-admin-web">🖥️ Admin Portal (Port 3000)</option>
-            <option value="ims-superadmin-web">👑 Superadmin Web (Port 3002)</option>
-            <option value="ims-storefront-web">🛍️ Storefront Web (Port 3001)</option>
-          </optgroup>
-          <optgroup label="App Generator Suite">
-            <option value="ims-generator-backend">⚙️ Generator Backend (Port 8005)</option>
-            <option value="ims-generator-frontend">📱 Generator Frontend (Port 3005)</option>
-          </optgroup>
-          <optgroup label="Shared Infrastructure">
-            <option value="jenkins">🏗️ Jenkins CI/CD (Port 8080)</option>
-            <option value="web-log-viewer">📊 Tracer & Log Hub (Port 8888)</option>
-          </optgroup>
-        </select>
-        <button class="btn-refresh" onclick="fetchServiceLogs()">🔄 Refresh Stream</button>
+    <!-- ==========================================================================
+         TAB 4: LIVE LOG STREAMER
+         ========================================================================== -->
+    <section id="view-stream" class="panel-container" style="display: none;">
+      <div class="section-header">
+        <div>
+          <div class="section-title">📜 Live Service Log Terminal</div>
+          <div class="section-desc">Real-time log streamer with instant level filtering, search, and export</div>
+        </div>
+      </div>
+
+      <div class="streamer-toolbar">
+        <div class="toolbar-left">
+          <label style="font-size: 12px; font-weight: 700; color: var(--text-muted);">Service:</label>
+          <select id="serviceSelect" class="select-dropdown" onchange="fetchServiceLogs()">
+            <optgroup label="Core & Gateway">
+              <option value="ims-api-gateway">🚪 API Gateway (Port 8080)</option>
+              <option value="ims-main-backend">🏢 Main Backend (Port 8081)</option>
+              <option value="ims-redis">⚡ Redis Cache (Port 6379)</option>
+            </optgroup>
+            <optgroup label="Microservices">
+              <option value="ims-catalog-service">📦 Catalog Service (Port 4002)</option>
+              <option value="ims-inventory-service">🏭 Inventory Service (Port 4003)</option>
+              <option value="ims-sales-service">🧾 Sales Service (Port 4004)</option>
+              <option value="ims-payment-service">💳 Payment Service (Port 4006)</option>
+              <option value="ims-logistics-service">🚚 Logistics Service (Port 4007)</option>
+              <option value="ims-communication-service">📬 Communication Service (Port 4008)</option>
+              <option value="ims-audit-service">🔍 Audit Service (Port 4009)</option>
+            </optgroup>
+            <optgroup label="Frontends">
+              <option value="ims-admin-web">🖥️ Admin Portal (Port 3000)</option>
+              <option value="ims-superadmin-web">👑 Superadmin Web (Port 3002)</option>
+              <option value="ims-storefront-web">🛍️ Storefront Web (Port 3001)</option>
+            </optgroup>
+            <optgroup label="App Generator">
+              <option value="ims-generator-backend">⚙️ Generator Backend (Port 8005)</option>
+              <option value="ims-generator-frontend">📱 Generator Frontend (Port 3005)</option>
+            </optgroup>
+            <optgroup label="Infrastructure">
+              <option value="jenkins">🏗️ Jenkins CI/CD (Port 8080)</option>
+              <option value="web-log-viewer">📊 Tracer & Hub (Port 8888)</option>
+            </optgroup>
+          </select>
+
+          <input type="text" id="logSearchInput" class="search-input" style="min-width: 160px; padding: 6px 10px;" placeholder="Search in logs..." oninput="filterLogs()" />
+        </div>
+
+        <div class="toolbar-right">
+          <button class="log-filter-btn active" id="btn-filter-all" onclick="setLogLevel('ALL')">ALL</button>
+          <button class="log-filter-btn" id="btn-filter-err" onclick="setLogLevel('ERR')">🔴 ERRORS</button>
+          <button class="log-filter-btn" id="btn-filter-warn" onclick="setLogLevel('WARN')">🟡 WARN</button>
+          
+          <select id="tailCountSelect" class="select-dropdown" style="padding: 5px 8px;" onchange="fetchServiceLogs()">
+            <option value="150">150 lines</option>
+            <option value="300" selected>300 lines</option>
+            <option value="600">600 lines</option>
+            <option value="1200">1200 lines</option>
+          </select>
+
+          <button class="btn-action" onclick="copyTerminalLogs()" title="Copy all logs">📋 Copy</button>
+          <button class="btn-action" onclick="downloadTerminalLogs()" title="Download logs as .txt">💾 Download</button>
+          <button class="btn-action" onclick="fetchServiceLogs()" title="Refresh stream">🔄</button>
+        </div>
       </div>
 
       <div class="log-terminal" id="logTerminal">
         <div>Loading logs...</div>
       </div>
-    </div>
+    </section>
 
-    <!-- TAB 5: Request Flow Tracer -->
-    <div id="view-flow" class="panel-view">
-      <div class="search-panel">
-        <div class="search-input-group">
-          <input type="text" id="queryInput" class="search-input" placeholder="Search trace by Order ID, User ID, Trace ID, SKU, or keyword..." value="login" />
-          <button class="btn-primary" onclick="executeTrace()">
-            <span>🔍</span>
-            <span>Trace Flow</span>
-          </button>
+    <!-- ==========================================================================
+         TAB 5: REQUEST FLOW TRACER
+         ========================================================================== -->
+    <section id="view-flow" class="panel-container" style="display: none;">
+      <div class="section-header">
+        <div>
+          <div class="section-title">🔍 Request Flow Tracer & Root Cause Analyzer</div>
+          <div class="section-desc">Trace user requests across Gateway $\rightarrow$ Microservices $\rightarrow$ DB in real time</div>
         </div>
+      </div>
 
-        <div class="quick-chips">
-          <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">Quick Traces:</span>
-          <span class="chip" onclick="applyQuickFilter('login')">🔑 POST /api/auth/login</span>
-          <span class="chip" onclick="applyQuickFilter('Connected')">✅ Service DB Connections</span>
-          <span class="chip" onclick="applyQuickFilter('Error')">❌ Error & Exceptions</span>
-          <span class="chip" onclick="applyQuickFilter('images')">🖼️ Variant Images Upload</span>
-          <span class="chip" onclick="applyQuickFilter('products')">📦 Catalog Service</span>
-          <span class="chip" onclick="applyQuickFilter('inventory')">🏭 Inventory Service</span>
-        </div>
+      <div class="filter-bar" style="gap: 10px;">
+        <input type="text" id="queryInput" class="search-input" style="flex: 1; min-width: 260px;" placeholder="Search trace by Order ID, User ID, Trace ID, SKU, or keyword..." value="login" />
+        <button class="btn-action" style="background: var(--primary); color: #fff; padding: 8px 18px;" onclick="executeTrace()">
+          <span>🔍 Trace Flow</span>
+        </button>
+      </div>
+
+      <div class="quick-chips">
+        <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Quick Filters:</span>
+        <span class="chip" onclick="applyQuickFilter('login')">🔑 POST /api/auth/login</span>
+        <span class="chip" onclick="applyQuickFilter('Connected')">✅ DB Connections</span>
+        <span class="chip" onclick="applyQuickFilter('Error')">❌ Exceptions</span>
+        <span class="chip" onclick="applyQuickFilter('images')">🖼️ Variant Images (R2)</span>
+        <span class="chip" onclick="applyQuickFilter('products')">📦 Catalog Service</span>
+        <span class="chip" onclick="applyQuickFilter('inventory')">🏭 Inventory Service</span>
       </div>
 
       <div id="traceResults" class="timeline">
-        <!-- Trace results populated here -->
+        <!-- Trace timeline populated dynamically -->
       </div>
-    </div>
+    </section>
 
   </main>
 
-  <!-- Toast Notification Container -->
+  <!-- Toast Container -->
   <div class="toast-container" id="toastContainer"></div>
 
+  <!-- ==========================================================================
+       CLIENT APPLICATION LOGIC
+       ========================================================================== -->
   <script>
     var currentNamespace = 'dev';
     var servicesData = [];
+    var rawLogs = [];
+    var currentLogLevel = 'ALL';
 
+    // 1. Theme Management (Dark & Light Mode)
+    function initTheme() {
+      var savedTheme = localStorage.getItem('smartseth_theme');
+      if (!savedTheme) {
+        savedTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      }
+      setTheme(savedTheme);
+    }
+
+    function toggleTheme() {
+      var current = document.documentElement.getAttribute('data-theme') || 'dark';
+      var nextTheme = current === 'dark' ? 'light' : 'dark';
+      setTheme(nextTheme);
+      localStorage.setItem('smartseth_theme', nextTheme);
+    }
+
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      var icon = document.getElementById('themeIcon');
+      if (icon) {
+        icon.innerText = theme === 'dark' ? '🌙' : '☀️';
+      }
+    }
+
+    // 2. Toast System
     function showToast(message, type) {
       var container = document.getElementById('toastContainer');
       var toast = document.createElement('div');
@@ -925,20 +1271,22 @@
       }, 3500);
     }
 
+    // 3. Namespace Switcher (DEV <-> PROD)
     function switchNamespace(ns) {
       currentNamespace = ns;
       document.getElementById('btn-env-dev').className = 'env-btn ' + (ns === 'dev' ? 'active-dev' : '');
       document.getElementById('btn-env-prod').className = 'env-btn ' + (ns === 'prod' ? 'active-prod' : '');
-      document.getElementById('clusterStatusText').innerText = (ns === 'prod' ? 'Prod Cluster Active (.com)' : 'Dev Cluster Active (.dev)');
+      document.getElementById('clusterStatusText').innerText = (ns === 'prod' ? 'Prod Active (.com)' : 'Dev Active (.dev)');
       
       var subtitle = document.getElementById('topologySubtitle');
       if (subtitle) {
-        subtitle.innerHTML = 'Viewing <b style="color:' + (ns === 'prod' ? '#10b981' : '#38bdf8') + '">' + ns.toUpperCase() + '</b> Cluster (*.smartseth.' + (ns === 'prod' ? 'com' : 'dev') + ')';
+        subtitle.innerHTML = 'Viewing <b style="color:' + (ns === 'prod' ? '#10b981' : '#0ea5e9') + '">' + ns.toUpperCase() + '</b> Cluster (*.smartseth.' + (ns === 'prod' ? 'com' : 'dev') + ')';
       }
 
       refreshAll();
     }
 
+    // 4. Tab Navigation
     function switchTab(tab) {
       ['topology', 'pods', 'events', 'stream', 'flow'].forEach(function(t) {
         var el = document.getElementById('tab-' + t);
@@ -952,6 +1300,7 @@
       if (tab === 'flow') executeTrace();
     }
 
+    // 5. Data Refresh & Metrics
     async function refreshAll() {
       await Promise.all([loadMetrics(), loadServices(), loadEvents()]);
     }
@@ -1002,14 +1351,14 @@
         }
 
         var html = '';
-        data.events.slice(0, 35).forEach(function(ev) {
+        data.events.slice(0, 40).forEach(function(ev) {
           var isWarn = ev.type === 'Warning';
           html += '<tr>' +
             '<td><span class="status-badge ' + (isWarn ? 'Failed' : 'Running') + '">' + ev.type + '</span></td>' +
-            '<td><b style="color:' + (isWarn ? '#f87171' : '#a5b4fc') + '">' + ev.reason + '</b></td>' +
-            '<td><code style="color:#93c5fd">' + ev.component + '</code></td>' +
+            '<td><b style="color:' + (isWarn ? '#ef4444' : 'var(--primary)') + '">' + ev.reason + '</b></td>' +
+            '<td><code style="color:var(--accent); font-family:var(--font-mono);">' + ev.component + '</code></td>' +
             '<td style="font-size:12px;">' + ev.message + '</td>' +
-            '<td><span style="color:var(--text-muted)">' + ev.age + '</span></td>' +
+            '<td><span style="color:var(--text-muted); font-size:11px;">' + ev.age + '</span></td>' +
             '<td>' + ev.count + '</td>' +
           '</tr>';
         });
@@ -1017,6 +1366,7 @@
       } catch (e) {}
     }
 
+    // 6. Render Topology View
     function renderTopology() {
       var grid = document.getElementById('topologyGrid');
       var filter = (document.getElementById('topologyFilterInput')?.value || '').toLowerCase();
@@ -1080,25 +1430,30 @@
       grid.innerHTML = html;
     }
 
+    // 7. Render Pods Table (Desktop) & Cards (Mobile)
     function renderPodsTable() {
       var tbody = document.getElementById('podsTableBody');
+      var mobileList = document.getElementById('mobilePodsList');
       if (!tbody) return;
-      var html = '';
+
+      var tableHtml = '';
+      var mobileHtml = '';
 
       servicesData.forEach(function(s) {
         var status = s.k8s ? s.k8s.status : 'Stopped';
         var isRunning = status === 'Running';
         var replicas = s.deployment?.replicas !== undefined ? s.deployment.replicas : (isRunning ? 1 : 0);
 
-        html += '<tr>' +
+        // Desktop Table Row
+        tableHtml += '<tr>' +
           '<td><b>' + s.icon + ' ' + s.name + '</b></td>' +
           '<td><span style="color:var(--text-muted)">' + s.category + '</span></td>' +
           '<td><span class="status-badge ' + status + '">' + (isRunning ? 'Running' : (replicas === 0 ? 'Stopped' : status)) + '</span></td>' +
-          '<td><code style="color:#93c5fd">' + (s.k8s?.podName || s.id) + '</code></td>' +
-          '<td><b style="font-family:var(--font-mono); color:#a5b4fc">' + (s.k8s?.cpu || '< 5m') + '</b></td>' +
-          '<td><b style="font-family:var(--font-mono); color:#6ee7b7">' + (s.k8s?.memory || '24Mi') + '</b></td>' +
+          '<td><code style="color:var(--accent); font-family:var(--font-mono); font-size:12px;">' + (s.k8s?.podName || s.id) + '</code></td>' +
+          '<td><b style="font-family:var(--font-mono); color:var(--primary)">' + (s.k8s?.cpu || '< 5m') + '</b></td>' +
+          '<td><b style="font-family:var(--font-mono); color:var(--success)">' + (s.k8s?.memory || '24Mi') + '</b></td>' +
           '<td>' + (s.k8s?.restarts || 0) + '</td>' +
-          '<td><span style="color:var(--text-muted)">' + (s.k8s?.age || '--') + '</span></td>' +
+          '<td><span style="color:var(--text-muted); font-size:12px;">' + (s.k8s?.age || '--') + '</span></td>' +
           '<td>' +
             '<div style="display:flex; gap:6px;">' +
               '<button class="btn-action restart" style="padding:4px 8px; font-size:11px;" onclick="restartService(\'' + s.id + '\')">🔄</button>' +
@@ -1110,15 +1465,44 @@
             '</div>' +
           '</td>' +
         '</tr>';
+
+        // Mobile Card Row
+        mobileHtml += '<div class="service-card">' +
+          '<div class="card-top">' +
+            '<div class="card-icon-title">' +
+              '<div class="service-icon">' + s.icon + '</div>' +
+              '<div>' +
+                '<div class="service-name">' + s.name + '</div>' +
+                '<div style="font-size:11px; color:var(--text-muted); font-family:var(--font-mono);">' + (s.k8s?.podName || s.id) + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<span class="status-badge ' + status + '">' + (isRunning ? 'Running' : (replicas === 0 ? 'Stopped' : status)) + '</span>' +
+          '</div>' +
+          '<div class="resource-row">' +
+            '<div class="resource-col"><span class="resource-label">CPU</span><span class="resource-val">' + (s.k8s?.cpu || '< 5m') + '</span></div>' +
+            '<div class="resource-col"><span class="resource-label">RAM</span><span class="resource-val">' + (s.k8s?.memory || '24Mi') + '</span></div>' +
+            '<div class="resource-col"><span class="resource-label">Restarts</span><span class="resource-val">' + (s.k8s?.restarts || 0) + '</span></div>' +
+          '</div>' +
+          '<div class="card-actions">' +
+            '<button class="btn-action restart" onclick="restartService(\'' + s.id + '\')">🔄 Restart</button>' +
+            (replicas > 0 ? 
+              '<button class="btn-action stop" onclick="scaleService(\'' + s.id + '\', 0)">⏹️ Stop</button>' :
+              '<button class="btn-action start" onclick="scaleService(\'' + s.id + '\', 1)">▶️ Start</button>'
+            ) +
+            '<button class="btn-action" onclick="inspectServiceLogs(\'' + s.id + '\')">📜 Logs</button>' +
+          '</div>' +
+        '</div>';
       });
 
-      tbody.innerHTML = html;
+      tbody.innerHTML = tableHtml;
+      if (mobileList) mobileList.innerHTML = mobileHtml;
     }
 
     function filterTopology() {
       renderTopology();
     }
 
+    // 8. Pod Actions (Restart, Scale)
     async function restartService(serviceId) {
       showToast('Triggering rolling restart for ' + serviceId + '...');
       try {
@@ -1165,35 +1549,95 @@
       fetchServiceLogs();
     }
 
+    // 9. Live Log Streamer & Filters
+    function setLogLevel(lvl) {
+      currentLogLevel = lvl;
+      ['all', 'err', 'warn'].forEach(function(l) {
+        var b = document.getElementById('btn-filter-' + l);
+        if (b) b.className = 'log-filter-btn ' + (l === lvl.toLowerCase() ? 'active' : '');
+      });
+      renderFilteredLogs();
+    }
+
     async function fetchServiceLogs() {
       var select = document.getElementById('serviceSelect');
       var term = document.getElementById('logTerminal');
+      var tail = document.getElementById('tailCountSelect')?.value || '300';
       var s = select.value;
       term.innerHTML = '<div style="color:var(--text-muted)">Fetching latest logs for ' + s + ' (' + currentNamespace + ')...</div>';
 
       try {
-        var res = await fetch('/api/logs?service=' + encodeURIComponent(s) + '&ns=' + currentNamespace + '&tail=250');
+        var res = await fetch('/api/logs?service=' + encodeURIComponent(s) + '&ns=' + currentNamespace + '&tail=' + tail);
         var data = await res.json();
-        if (!data.logs || data.logs.length === 0) {
-          term.innerHTML = '<div style="color:var(--text-muted)">No logs recorded yet for ' + s + ' in ' + currentNamespace + '</div>';
-          return;
-        }
-
-        var html = '';
-        data.logs.forEach(function(line) {
-          var isErr = /error|fail|exception|fatal|500/i.test(line);
-          var isWarn = /warn|warning|retry/i.test(line);
-          var isSucc = /success|connected|started|listening|200 OK/i.test(line);
-          var cls = isErr ? 'err' : (isWarn ? 'warn' : (isSucc ? 'succ' : ''));
-          html += '<div class="log-line ' + cls + '">' + escapeHtml(line) + '</div>';
-        });
-        term.innerHTML = html;
-        term.scrollTop = term.scrollHeight;
+        rawLogs = data.logs || [];
+        renderFilteredLogs();
       } catch (err) {
         term.innerHTML = '<div style="color:var(--error)">Error fetching logs: ' + err.message + '</div>';
       }
     }
 
+    function filterLogs() {
+      renderFilteredLogs();
+    }
+
+    function renderFilteredLogs() {
+      var term = document.getElementById('logTerminal');
+      var query = (document.getElementById('logSearchInput')?.value || '').toLowerCase();
+
+      if (!rawLogs || rawLogs.length === 0) {
+        term.innerHTML = '<div style="color:var(--text-muted)">No logs recorded yet.</div>';
+        return;
+      }
+
+      var filtered = rawLogs.filter(function(line) {
+        var lower = line.toLowerCase();
+        if (query && !lower.includes(query)) return false;
+
+        if (currentLogLevel === 'ERR') {
+          return /error|fail|exception|fatal|500/i.test(line);
+        }
+        if (currentLogLevel === 'WARN') {
+          return /warn|warning|retry/i.test(line);
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        term.innerHTML = '<div style="color:var(--text-muted)">No logs match the current filter.</div>';
+        return;
+      }
+
+      var html = '';
+      filtered.forEach(function(line) {
+        var isErr = /error|fail|exception|fatal|500/i.test(line);
+        var isWarn = /warn|warning|retry/i.test(line);
+        var isSucc = /success|connected|started|listening|200 OK/i.test(line);
+        var cls = isErr ? 'err' : (isWarn ? 'warn' : (isSucc ? 'succ' : ''));
+        html += '<div class="log-line ' + cls + '">' + escapeHtml(line) + '</div>';
+      });
+
+      term.innerHTML = html;
+      term.scrollTop = term.scrollHeight;
+    }
+
+    function copyTerminalLogs() {
+      var text = rawLogs.join('\n');
+      navigator.clipboard.writeText(text);
+      showToast('Copied ' + rawLogs.length + ' log lines to clipboard');
+    }
+
+    function downloadTerminalLogs() {
+      var text = rawLogs.join('\n');
+      var blob = new Blob([text], { type: 'text/plain' });
+      var s = document.getElementById('serviceSelect').value;
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = s + '-' + currentNamespace + '-' + new Date().toISOString().slice(0, 19).replace(/:/g, '-') + '.log';
+      a.click();
+      showToast('Downloaded log file');
+    }
+
+    // 10. Flow Tracer
     function applyQuickFilter(val) {
       document.getElementById('queryInput').value = val;
       executeTrace();
@@ -1226,7 +1670,7 @@
               '</div>' +
               '<span style="font-size:11px; font-family:var(--font-mono); color:var(--text-muted);">' + item.time + '</span>' +
             '</div>' +
-            '<div style="font-family:var(--font-mono); font-size:12px; background:#090d16; padding:10px; border-radius:6px; word-break:break-all;">' + escapeHtml(item.log) + '</div>' +
+            '<div style="font-family:var(--font-mono); font-size:11.5px; background:var(--bg-input); padding:8px 10px; border-radius:6px; word-break:break-all;">' + escapeHtml(item.log) + '</div>' +
           '</div>';
         });
         resultsDiv.innerHTML = html;
@@ -1239,7 +1683,8 @@
       return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
-    // Auto load on boot & recurring poll
+    // Initialize Theme and Boot App
+    initTheme();
     refreshAll();
     setInterval(refreshAll, 10000);
   </script>
