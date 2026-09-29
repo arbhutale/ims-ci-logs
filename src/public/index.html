@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>SmartSeth | Cluster Topology, Observability & Pod Manager</title>
+  <title>SmartSeth | Cluster Observability, Pod & SSL Manager</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -12,7 +12,6 @@
        THEME DESIGN SYSTEM (DARK & LIGHT MODE)
        ========================================================================== */
     :root {
-      /* Shared Accent Palette */
       --primary: #6366f1;
       --primary-hover: #4f46e5;
       --primary-subtle: rgba(99, 102, 241, 0.12);
@@ -36,7 +35,6 @@
       --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* DARK THEME (Default) */
     [data-theme="dark"] {
       --bg-base: #06090e;
       --bg-surface: #0c111a;
@@ -59,7 +57,6 @@
       --glow-color: rgba(99, 102, 241, 0.3);
     }
 
-    /* LIGHT THEME */
     [data-theme="light"] {
       --bg-base: #f1f5f9;
       --bg-surface: #ffffff;
@@ -82,7 +79,6 @@
       --glow-color: rgba(99, 102, 241, 0.15);
     }
 
-    /* Base Reset */
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     html, body {
       min-height: 100vh;
@@ -93,12 +89,9 @@
       line-height: 1.5;
       transition: background-color 0.25s ease, color 0.25s ease;
       -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
     }
 
-    /* ==========================================================================
-       TOP NAVIGATION BAR
-       ========================================================================== */
+    /* Top Navigation Bar */
     .navbar {
       background: var(--nav-bg);
       backdrop-filter: blur(16px);
@@ -114,828 +107,292 @@
       gap: 16px;
       transition: var(--transition);
     }
-
-    .nav-left {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      flex-shrink: 0;
-    }
-
-    .brand-box {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      text-decoration: none;
-      color: inherit;
-    }
-
+    .nav-left { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+    .brand-box { display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; }
     .brand-logo {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
+      width: 36px; height: 36px; border-radius: 10px;
       background: linear-gradient(135deg, #6366f1, #0ea5e9);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      box-shadow: 0 4px 14px var(--glow-color);
-      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+      box-shadow: 0 4px 14px var(--glow-color); flex-shrink: 0;
     }
+    .brand-title { font-size: 15px; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; }
 
-    .brand-title {
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    /* Environment Switcher Pill */
     .env-toggle {
-      display: inline-flex;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: 30px;
-      padding: 3px;
-      gap: 2px;
+      display: inline-flex; background: var(--bg-input);
+      border: 1px solid var(--border); border-radius: 30px; padding: 3px; gap: 2px;
     }
-
     .env-btn {
-      background: transparent;
-      border: none;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: var(--transition);
-      letter-spacing: 0.04em;
+      background: transparent; border: none; padding: 4px 12px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: var(--transition);
     }
-
     .env-btn.active-dev {
-      background: linear-gradient(135deg, #0284c7, #0369a1);
-      color: #fff;
-      box-shadow: 0 2px 10px rgba(14, 165, 233, 0.4);
+      background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff; box-shadow: 0 2px 10px rgba(14, 165, 233, 0.4);
     }
-
     .env-btn.active-prod {
-      background: linear-gradient(135deg, #059669, #047857);
-      color: #fff;
-      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4);
+      background: linear-gradient(135deg, #059669, #047857); color: #fff; box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4);
     }
 
-    /* Navigation Tabs */
     .nav-tabs {
-      display: flex;
-      gap: 4px;
-      background: var(--bg-input);
-      padding: 3px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      overflow-x: auto;
-      scrollbar-width: none;
+      display: flex; gap: 4px; background: var(--bg-input); padding: 3px;
+      border-radius: 12px; border: 1px solid var(--border); overflow-x: auto; scrollbar-width: none;
     }
     .nav-tabs::-webkit-scrollbar { display: none; }
-
     .nav-tab {
-      padding: 7px 14px;
-      border-radius: 8px;
-      font-size: 12.5px;
-      font-weight: 600;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: var(--transition);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      white-space: nowrap;
-      user-select: none;
+      padding: 7px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 600;
+      color: var(--text-muted); cursor: pointer; transition: var(--transition);
+      display: flex; align-items: center; gap: 6px; white-space: nowrap; user-select: none;
     }
+    .nav-tab:hover { color: var(--text-main); background: rgba(99, 102, 241, 0.08); }
+    .nav-tab.active { background: var(--bg-card); color: var(--text-main); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
 
-    .nav-tab:hover {
-      color: var(--text-main);
-      background: rgba(99, 102, 241, 0.08);
-    }
-
-    .nav-tab.active {
-      background: var(--bg-card);
-      color: var(--text-main);
-      box-shadow: var(--shadow-sm);
-      border: 1px solid var(--border);
-    }
-
-    /* Right Controls */
-    .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-
+    .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .live-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--success-subtle);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      padding: 5px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--success);
-      white-space: nowrap;
+      display: flex; align-items: center; gap: 6px; background: var(--success-subtle);
+      border: 1px solid rgba(16, 185, 129, 0.3); padding: 5px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; color: var(--success); white-space: nowrap;
     }
-
     .pulse-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--success);
-      box-shadow: 0 0 8px var(--success);
-      animation: pulseAnim 2s infinite;
+      width: 7px; height: 7px; border-radius: 50%; background: var(--success);
+      box-shadow: 0 0 8px var(--success); animation: pulseAnim 2s infinite;
     }
-
-    @keyframes pulseAnim {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.85); }
-    }
+    @keyframes pulseAnim { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
     .btn-icon {
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      color: var(--text-main);
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 15px;
-      transition: var(--transition);
+      background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main);
+      width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center;
+      justify-content: center; cursor: pointer; font-size: 15px; transition: var(--transition);
     }
+    .btn-icon:hover { background: var(--bg-elevated); border-color: var(--border-strong); transform: translateY(-1px); }
 
-    .btn-icon:hover {
-      background: var(--bg-elevated);
-      border-color: var(--border-strong);
-      transform: translateY(-1px);
-    }
-
-    /* ==========================================================================
-       MAIN CONTAINER & LAYOUT
-       ========================================================================== */
+    /* Main Container */
     .main-container {
-      max-width: 1600px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
+      max-width: 1600px; width: 100%; margin: 0 auto; padding: 20px;
+      display: flex; flex-direction: column; gap: 20px;
     }
 
-    /* ==========================================================================
-       METRICS STATS BANNER (RESPONSIVE GRID)
-       ========================================================================== */
+    /* Metrics Grid */
     .metrics-banner {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 14px;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;
     }
-
     .metric-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 16px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      position: relative;
-      overflow: hidden;
-      box-shadow: var(--card-shadow);
-      transition: var(--transition);
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; position: relative;
+      overflow: hidden; box-shadow: var(--card-shadow); transition: var(--transition);
     }
-
     .metric-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0; height: 3px;
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
       background: linear-gradient(90deg, var(--primary), var(--accent));
     }
+    .metric-card.success-accent::before { background: linear-gradient(90deg, #10b981, #059669); }
+    .metric-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+    .metric-value-row { display: flex; align-items: baseline; justify-content: space-between; }
+    .metric-value { font-size: 22px; font-weight: 800; font-family: var(--font-mono); color: var(--text-main); }
+    .metric-sub { font-size: 12px; color: var(--accent); font-weight: 700; font-family: var(--font-mono); }
+    .metric-progress { height: 4px; background: var(--bg-input); border-radius: 4px; overflow: hidden; margin-top: 4px; }
+    .metric-progress-bar { height: 100%; background: var(--primary); transition: width 0.4s ease; }
 
-    .metric-card.success-accent::before {
-      background: linear-gradient(90deg, #10b981, #059669);
-    }
-
-    .metric-title {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-muted);
-    }
-
-    .metric-value-row {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-    }
-
-    .metric-value {
-      font-size: 22px;
-      font-weight: 800;
-      font-family: var(--font-mono);
-      color: var(--text-main);
-    }
-
-    .metric-sub {
-      font-size: 12px;
-      color: var(--accent);
-      font-weight: 700;
-      font-family: var(--font-mono);
-    }
-
-    .metric-progress {
-      height: 4px;
-      background: var(--bg-input);
-      border-radius: 4px;
-      overflow: hidden;
-      margin-top: 4px;
-    }
-
-    .metric-progress-bar {
-      height: 100%;
-      background: var(--primary);
-      transition: width 0.4s ease;
-    }
-
-    /* ==========================================================================
-       PANEL & CARD LAYOUTS
-       ========================================================================== */
+    /* Panels */
     .panel-container {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 22px;
-      box-shadow: var(--card-shadow);
+      background: var(--bg-surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 22px; box-shadow: var(--card-shadow);
     }
-
     .section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 18px;
-      flex-wrap: wrap;
-      gap: 12px;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 18px; flex-wrap: wrap; gap: 12px;
     }
+    .section-title { font-size: 17px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+    .section-desc { font-size: 12px; color: var(--text-muted); }
 
-    .section-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 17px;
-      font-weight: 800;
-      color: var(--text-main);
-    }
-
-    .section-desc {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    /* Filter & Search Bar */
-    .filter-bar {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 18px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
+    .filter-bar { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; }
     .search-input {
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 8px 14px;
-      color: var(--text-main);
-      font-size: 13px;
-      min-width: 240px;
-      outline: none;
-      transition: var(--transition);
-      font-family: inherit;
+      background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 8px 14px; color: var(--text-main); font-size: 13px; min-width: 240px; outline: none; transition: var(--transition);
     }
+    .search-input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
 
-    .search-input:focus {
-      border-color: var(--border-focus);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-    }
-
-    /* ==========================================================================
-       TOPOLOGY GRID & SERVICE CARDS
-       ========================================================================== */
-    .topology-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-      gap: 16px;
-    }
-
+    /* Topology Grid */
+    .topology-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 16px; }
     .service-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 12px;
-      transition: var(--transition);
-      box-shadow: var(--shadow-sm);
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;
+      transition: var(--transition); box-shadow: var(--shadow-sm);
     }
-
-    .service-card:hover {
-      border-color: rgba(99, 102, 241, 0.4);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-md);
-    }
-
-    .card-top {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .card-icon-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
+    .service-card:hover { border-color: rgba(99, 102, 241, 0.4); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .card-icon-title { display: flex; align-items: center; gap: 10px; }
     .service-icon {
-      font-size: 22px;
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      background: var(--bg-input);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid var(--border);
-      flex-shrink: 0;
+      font-size: 22px; width: 40px; height: 40px; border-radius: 10px;
+      background: var(--bg-input); display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border); flex-shrink: 0;
     }
+    .service-name { font-weight: 700; font-size: 14.5px; color: var(--text-main); }
+    .service-category { font-size: 11px; color: var(--text-muted); }
 
-    .service-name {
-      font-weight: 700;
-      font-size: 14.5px;
-      color: var(--text-main);
-    }
-
-    .service-category {
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .badge-group {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 4px;
-      flex-shrink: 0;
-    }
-
+    .badge-group { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
     .status-badge {
-      font-size: 10.5px;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 6px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-family: var(--font-mono);
+      font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 6px;
+      display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-mono);
     }
+    .status-badge.Running, .status-badge.Valid { background: var(--success-subtle); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-badge.Stopped { background: rgba(148, 163, 184, 0.15); color: var(--text-muted); border: 1px solid rgba(148, 163, 184, 0.3); }
+    .status-badge.Pending, .status-badge.ExpiringSoon { background: var(--warn-subtle); color: var(--warn); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-badge.Failed, .status-badge.Expired { background: var(--error-subtle); color: var(--error); border: 1px solid rgba(239, 68, 68, 0.3); }
 
-    .status-badge.Running {
-      background: var(--success-subtle);
-      color: var(--success);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-    }
-
-    .status-badge.Stopped {
-      background: rgba(148, 163, 184, 0.15);
-      color: var(--text-muted);
-      border: 1px solid rgba(148, 163, 184, 0.3);
-    }
-
-    .status-badge.Pending, .status-badge.Restarting {
-      background: var(--warn-subtle);
-      color: var(--warn);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-    }
-
-    .status-badge.Failed, .status-badge.CrashLoopBackOff {
-      background: var(--error-subtle);
-      color: var(--error);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-    }
-
-    .env-tag {
-      font-size: 9.5px;
-      font-weight: 800;
-      padding: 2px 6px;
-      border-radius: 4px;
-      letter-spacing: 0.05em;
-    }
+    .env-tag { font-size: 9.5px; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
     .env-tag.DEV { background: rgba(14, 165, 233, 0.15); color: #0284c7; border: 1px solid rgba(14, 165, 233, 0.3); }
     .env-tag.PROD { background: rgba(16, 185, 129, 0.15); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); }
     .env-tag.SHARED { background: rgba(245, 158, 11, 0.15); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); }
 
-    .service-desc {
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.4;
-    }
-
+    .service-desc { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
     .service-domain-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 6px 10px;
-      font-size: 11.5px;
-      font-family: var(--font-mono);
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 6px 10px; font-size: 11.5px; font-family: var(--font-mono);
     }
-
-    .domain-url {
-      color: var(--accent);
-      text-decoration: none;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 220px;
-      font-weight: 600;
-    }
+    .domain-url { color: var(--accent); text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; font-weight: 600; }
     .domain-url:hover { text-decoration: underline; }
-
-    .btn-copy {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 13px;
-      padding: 2px 4px;
-    }
+    .btn-copy { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 13px; padding: 2px 4px; }
     .btn-copy:hover { color: var(--text-main); }
 
     .resource-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 6px;
-      background: var(--bg-input);
-      padding: 7px 10px;
-      border-radius: var(--radius-sm);
-      font-size: 11px;
-      font-family: var(--font-mono);
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
+      background: var(--bg-input); padding: 7px 10px; border-radius: var(--radius-sm);
+      font-size: 11px; font-family: var(--font-mono);
     }
+    .resource-col { display: flex; flex-direction: column; gap: 1px; }
+    .resource-label { color: var(--text-dim); font-size: 9.5px; text-transform: uppercase; font-weight: 600; }
+    .resource-val { color: var(--text-main); font-weight: 700; }
 
-    .resource-col {
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-    }
-
-    .resource-label {
-      color: var(--text-dim);
-      font-size: 9.5px;
-      text-transform: uppercase;
-      font-weight: 600;
-    }
-
-    .resource-val {
-      color: var(--text-main);
-      font-weight: 700;
-    }
-
-    /* Card Action Buttons */
-    .card-actions {
-      display: flex;
-      gap: 6px;
-      border-top: 1px solid var(--border);
-      padding-top: 10px;
-    }
-
+    .card-actions { display: flex; gap: 6px; border-top: 1px solid var(--border); padding-top: 10px; }
     .btn-action {
-      flex: 1;
-      padding: 6px 10px;
-      border-radius: var(--radius-sm);
-      font-size: 11.5px;
-      font-weight: 600;
-      border: 1px solid var(--border);
-      background: var(--bg-elevated);
-      color: var(--text-main);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      transition: var(--transition);
-      white-space: nowrap;
+      flex: 1; padding: 6px 10px; border-radius: var(--radius-sm); font-size: 11.5px; font-weight: 600;
+      border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-main);
+      cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+      transition: var(--transition); white-space: nowrap;
     }
+    .btn-action:hover { background: var(--border-strong); }
+    .btn-action.restart:hover { background: rgba(99, 102, 241, 0.2); color: #6366f1; border-color: #6366f1; }
+    .btn-action.stop:hover { background: rgba(239, 68, 68, 0.2); color: #ef4444; border-color: #ef4444; }
+    .btn-action.start:hover { background: rgba(16, 185, 129, 0.2); color: #10b981; border-color: #10b981; }
 
-    .btn-action:hover {
-      background: var(--border-strong);
-    }
-
-    .btn-action.restart:hover {
-      background: rgba(99, 102, 241, 0.2);
-      color: #6366f1;
-      border-color: #6366f1;
-    }
-
-    .btn-action.stop:hover {
-      background: rgba(239, 68, 68, 0.2);
-      color: #ef4444;
-      border-color: #ef4444;
-    }
-
-    .btn-action.start:hover {
-      background: rgba(16, 185, 129, 0.2);
-      color: #10b981;
-      border-color: #10b981;
-    }
-
-    /* ==========================================================================
-       DATA TABLES (DESKTOP & IPAD)
-       ========================================================================== */
-    .table-wrapper {
-      overflow-x: auto;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border);
-    }
-
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      text-align: left;
-    }
-
+    /* Tables */
+    .table-wrapper { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--border); }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
     .data-table th {
-      background: var(--bg-input);
-      padding: 12px 14px;
-      color: var(--text-muted);
-      font-weight: 700;
-      text-transform: uppercase;
-      font-size: 10.5px;
-      letter-spacing: 0.05em;
-      border-bottom: 1px solid var(--border);
-      white-space: nowrap;
+      background: var(--bg-input); padding: 12px 14px; color: var(--text-muted); font-weight: 700;
+      text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); white-space: nowrap;
     }
+    .data-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--text-main); vertical-align: middle; }
+    .data-table tr:hover td { background: var(--table-hover); }
+    .mobile-pods-list { display: none; flex-direction: column; gap: 12px; }
 
-    .data-table td {
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--border);
-      color: var(--text-main);
-      vertical-align: middle;
-    }
-
-    .data-table tr:hover td {
-      background: var(--table-hover);
-    }
-
-    /* Mobile Pod Cards Container (Hidden on Desktop) */
-    .mobile-pods-list {
-      display: none;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    /* ==========================================================================
-       LIVE LOG STREAMER & TERMINAL
-       ========================================================================== */
+    /* Streamer */
     .streamer-toolbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 14px;
-      background: var(--bg-input);
-      padding: 10px 14px;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+      margin-bottom: 14px; background: var(--bg-input); padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border);
     }
-
-    .toolbar-left, .toolbar-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
+    .toolbar-left, .toolbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .select-dropdown {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 7px 12px;
-      color: var(--text-main);
-      font-size: 12.5px;
-      font-weight: 600;
-      outline: none;
-      cursor: pointer;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 7px 12px; color: var(--text-main); font-size: 12.5px; font-weight: 600; outline: none; cursor: pointer;
     }
-
     .log-filter-btn {
-      padding: 5px 10px;
-      border-radius: 6px;
-      font-size: 11.5px;
-      font-weight: 700;
-      border: 1px solid var(--border);
-      background: var(--bg-card);
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: var(--transition);
+      padding: 5px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 700;
+      border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); cursor: pointer; transition: var(--transition);
     }
-    .log-filter-btn.active {
-      background: var(--primary);
-      color: #fff;
-      border-color: var(--primary);
-    }
+    .log-filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
     .log-terminal {
-      background: var(--terminal-bg);
-      border: 1px solid var(--terminal-border);
-      border-radius: var(--radius-md);
-      padding: 16px;
-      height: 600px;
-      overflow-y: auto;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      line-height: 1.6;
-      color: var(--terminal-text);
-      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.4);
+      background: var(--terminal-bg); border: 1px solid var(--terminal-border); border-radius: var(--radius-md);
+      padding: 16px; height: 600px; overflow-y: auto; font-family: var(--font-mono); font-size: 12px; line-height: 1.6;
+      color: var(--terminal-text); box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.4);
     }
-
-    .log-line {
-      white-space: pre-wrap;
-      word-break: break-all;
-      padding: 2px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-    }
+    .log-line { white-space: pre-wrap; word-break: break-all; padding: 2px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.02); }
     .log-line.err { color: #f87171; background: rgba(239, 68, 68, 0.08); font-weight: 600; }
     .log-line.warn { color: #fbbf24; background: rgba(245, 158, 11, 0.08); }
     .log-line.succ { color: #34d399; }
 
-    /* ==========================================================================
-       FLOW TRACER
-       ========================================================================== */
-    .quick-chips {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-      align-items: center;
-    }
-
+    /* Flow & SSL Cards */
+    .quick-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
     .chip {
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 11.5px;
-      font-weight: 600;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: var(--transition);
+      background: var(--bg-elevated); border: 1px solid var(--border); padding: 4px 10px;
+      border-radius: 20px; font-size: 11.5px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: var(--transition);
     }
+    .chip:hover { background: var(--border-strong); color: var(--text-main); }
 
-    .chip:hover {
-      background: var(--border-strong);
-      color: var(--text-main);
-    }
-
-    .timeline {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
+    .timeline { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
     .timeline-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      box-shadow: var(--shadow-sm);
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 14px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow-sm);
     }
-
     .timeline-card.error { border-left: 4px solid var(--error); background: var(--error-subtle); }
     .timeline-card.warn { border-left: 4px solid var(--warn); }
     .timeline-card.success { border-left: 4px solid var(--success); }
 
-    /* ==========================================================================
-       TOAST NOTIFICATIONS
-       ========================================================================== */
+    /* SSL Grid */
+    .ssl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px; margin-top: 14px; }
+    .ssl-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 18px; display: flex; flex-direction: column; gap: 14px; box-shadow: var(--card-shadow);
+      position: relative; overflow: hidden;
+    }
+    .ssl-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, #10b981, #0ea5e9);
+    }
+    .san-tags-container {
+      display: flex; flex-wrap: wrap; gap: 5px; max-height: 120px; overflow-y: auto; padding: 4px 0;
+    }
+    .san-tag {
+      background: var(--bg-input); border: 1px solid var(--border); border-radius: 4px;
+      padding: 2px 7px; font-size: 11px; font-family: var(--font-mono); color: var(--text-muted);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center; z-index: 1000; padding: 16px;
+    }
+    .modal-box {
+      background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      max-width: 650px; width: 100%; padding: 24px; box-shadow: var(--shadow-lg); display: flex; flex-direction: column; gap: 16px;
+    }
+
+    /* Toasts */
     .toast-container {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 1000;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      pointer-events: none;
+      position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+      display: flex; flex-direction: column; gap: 8px; pointer-events: none;
     }
-
     .toast {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      padding: 10px 16px;
-      border-radius: var(--radius-md);
-      color: var(--text-main);
-      font-size: 12.5px;
-      font-weight: 600;
-      box-shadow: var(--shadow-lg);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      pointer-events: auto;
-      animation: toastIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      background: var(--bg-card); border: 1px solid var(--border); padding: 10px 16px;
+      border-radius: var(--radius-md); color: var(--text-main); font-size: 12.5px; font-weight: 600;
+      box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 8px; pointer-events: auto; animation: toastIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
-
     .toast.success { border-left: 4px solid var(--success); }
     .toast.error { border-left: 4px solid var(--error); }
+    @keyframes toastIn { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-    @keyframes toastIn {
-      from { transform: translateY(15px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-
-    /* ==========================================================================
-       MOBILE & TABLET / IPAD RESPONSIVENESS (BREAKPOINTS)
-       ========================================================================== */
     @media (max-width: 900px) {
-      .navbar {
-        flex-wrap: wrap;
-        padding: 10px 14px;
-        gap: 10px;
-      }
-      .nav-tabs {
-        order: 3;
-        width: 100%;
-        justify-content: flex-start;
-      }
-      .main-container {
-        padding: 14px;
-        gap: 14px;
-      }
-      .metrics-banner {
-        grid-template-columns: repeat(2, 1fr);
-      }
+      .navbar { flex-wrap: wrap; padding: 10px 14px; gap: 10px; }
+      .nav-tabs { order: 3; width: 100%; justify-content: flex-start; }
+      .main-container { padding: 14px; gap: 14px; }
+      .metrics-banner { grid-template-columns: repeat(2, 1fr); }
     }
-
     @media (max-width: 640px) {
-      .metrics-banner {
-        grid-template-columns: 1fr;
-      }
-      .topology-grid {
-        grid-template-columns: 1fr;
-      }
-      /* Hide desktop tables, show mobile card list on phone */
-      .desktop-table {
-        display: none !important;
-      }
-      .mobile-pods-list {
-        display: flex !important;
-      }
-      .log-terminal {
-        height: 460px;
-      }
-      .streamer-toolbar {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .toolbar-left, .toolbar-right {
-        width: 100%;
-        justify-content: space-between;
-      }
+      .metrics-banner { grid-template-columns: 1fr; }
+      .topology-grid { grid-template-columns: 1fr; }
+      .ssl-grid { grid-template-columns: 1fr; }
+      .desktop-table { display: none !important; }
+      .mobile-pods-list { display: flex !important; }
+      .log-terminal { height: 460px; }
+      .streamer-toolbar { flex-direction: column; align-items: stretch; }
+      .toolbar-left, .toolbar-right { width: 100%; justify-content: space-between; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ==========================================================================
-       HEADER & NAVIGATION BAR
-       ========================================================================== -->
+  <!-- Navigation Bar -->
   <header class="navbar">
     <div class="nav-left">
       <div class="brand-box">
@@ -943,12 +400,11 @@
         <div>
           <div class="brand-title">
             <span>SmartSeth</span>
-            <span style="font-weight: 400; color: var(--text-muted); font-size: 13px;">Observability</span>
+            <span style="font-weight: 400; color: var(--text-muted); font-size: 13px;">Observability & SSL</span>
           </div>
         </div>
       </div>
 
-      <!-- Environment Selector -->
       <div class="env-toggle">
         <button class="env-btn active-dev" id="btn-env-dev" onclick="switchNamespace('dev')">DEV (.dev)</button>
         <button class="env-btn" id="btn-env-prod" onclick="switchNamespace('prod')">PROD (.com)</button>
@@ -959,36 +415,32 @@
     <nav class="nav-tabs">
       <div class="nav-tab active" id="tab-topology" onclick="switchTab('topology')">🗺️ Topology</div>
       <div class="nav-tab" id="tab-pods" onclick="switchTab('pods')">⚡ Pod Controls</div>
+      <div class="nav-tab" id="tab-ssl" onclick="switchTab('ssl')">🔒 SSL Certificates</div>
       <div class="nav-tab" id="tab-events" onclick="switchTab('events')">📢 Activity Feed</div>
       <div class="nav-tab" id="tab-stream" onclick="switchTab('stream')">📜 Live Logs</div>
       <div class="nav-tab" id="tab-flow" onclick="switchTab('flow')">🔍 Flow Tracer</div>
     </nav>
 
-    <!-- Right Controls -->
     <div class="nav-right">
       <div class="live-badge">
         <div class="pulse-dot"></div>
         <span id="clusterStatusText">Dev Active</span>
       </div>
 
-      <!-- Theme Switcher Button -->
       <button class="btn-icon" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Light / Dark Mode">
         <span id="themeIcon">🌙</span>
       </button>
 
-      <!-- Manual Refresh Button -->
       <button class="btn-icon" onclick="refreshAll()" title="Refresh Cluster Data">
         <span>🔄</span>
       </button>
     </div>
   </header>
 
-  <!-- ==========================================================================
-       MAIN CONTENT
-       ========================================================================== -->
+  <!-- Main Content -->
   <main class="main-container">
 
-    <!-- Cluster Hardware & Status Metrics Banner -->
+    <!-- Cluster Hardware Metrics Banner -->
     <section class="metrics-banner">
       <div class="metric-card">
         <div class="metric-title">Cluster CPU Usage</div>
@@ -1018,18 +470,16 @@
       </div>
 
       <div class="metric-card">
-        <div class="metric-title">Host Server Uptime</div>
+        <div class="metric-title">SSL Security Status</div>
         <div class="metric-value-row">
-          <div class="metric-value" id="val-uptime">-- hrs</div>
-          <div class="metric-sub" id="val-load-avg">Load: --</div>
+          <div class="metric-value" style="color: var(--success);" id="val-ssl-status">🟢 Active</div>
+          <div class="metric-sub" id="val-ssl-days">88+ days left</div>
         </div>
-        <div class="metric-progress"><div class="metric-progress-bar" style="width: 100%; background: var(--primary)"></div></div>
+        <div class="metric-progress"><div class="metric-progress-bar" style="width: 100%; background: var(--success)"></div></div>
       </div>
     </section>
 
-    <!-- ==========================================================================
-         TAB 1: TOPOLOGY GRID
-         ========================================================================== -->
+    <!-- TAB 1: TOPOLOGY GRID -->
     <section id="view-topology" class="panel-container">
       <div class="section-header">
         <div>
@@ -1043,13 +493,11 @@
       </div>
 
       <div class="topology-grid" id="topologyGrid">
-        <!-- Dynamically Populated -->
+        <!-- Populated dynamically -->
       </div>
     </section>
 
-    <!-- ==========================================================================
-         TAB 2: POD CONTROLLER
-         ========================================================================== -->
+    <!-- TAB 2: POD CONTROLLER -->
     <section id="view-pods" class="panel-container" style="display: none;">
       <div class="section-header">
         <div>
@@ -1058,7 +506,6 @@
         </div>
       </div>
 
-      <!-- Desktop & iPad Table View -->
       <div class="table-wrapper desktop-table">
         <table class="data-table">
           <thead>
@@ -1075,20 +522,35 @@
             </tr>
           </thead>
           <tbody id="podsTableBody">
-            <!-- Dynamically Populated -->
+            <!-- Populated dynamically -->
           </tbody>
         </table>
       </div>
 
-      <!-- Mobile Pod Cards View -->
       <div class="mobile-pods-list" id="mobilePodsList">
-        <!-- Dynamically Populated -->
+        <!-- Populated dynamically -->
       </div>
     </section>
 
-    <!-- ==========================================================================
-         TAB 3: REAL-TIME ACTIVITY & EVENTS FEED
-         ========================================================================== -->
+    <!-- TAB 3: SSL & TLS CERTIFICATE MANAGER (NEW FEATURE) -->
+    <section id="view-ssl" class="panel-container" style="display: none;">
+      <div class="section-header">
+        <div>
+          <div class="section-title">🔒 Let's Encrypt SSL / TLS Certificate Manager</div>
+          <div class="section-desc">Inspect validity, auto-renew certificates, and sync Kubernetes TLS secrets with 1-click (Zero SSH required)</div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-action" onclick="syncSslSecrets()" title="Sync certs to Kubernetes secrets">📋 Sync K8s Secrets</button>
+          <button class="btn-action restart" style="background: var(--primary); color: #fff;" onclick="triggerSslRenew('')">🔄 Renew All Certificates</button>
+        </div>
+      </div>
+
+      <div class="ssl-grid" id="sslCertGrid">
+        <!-- SSL Cards populated dynamically -->
+      </div>
+    </section>
+
+    <!-- TAB 4: REAL-TIME ACTIVITY & EVENTS FEED -->
     <section id="view-events" class="panel-container" style="display: none;">
       <div class="section-header">
         <div>
@@ -1111,15 +573,13 @@
             </tr>
           </thead>
           <tbody id="eventsTableBody">
-            <!-- Dynamically Populated -->
+            <!-- Populated dynamically -->
           </tbody>
         </table>
       </div>
     </section>
 
-    <!-- ==========================================================================
-         TAB 4: LIVE LOG STREAMER
-         ========================================================================== -->
+    <!-- TAB 5: LIVE LOG STREAMER -->
     <section id="view-stream" class="panel-container" style="display: none;">
       <div class="section-header">
         <div>
@@ -1187,9 +647,7 @@
       </div>
     </section>
 
-    <!-- ==========================================================================
-         TAB 5: REQUEST FLOW TRACER
-         ========================================================================== -->
+    <!-- TAB 6: REQUEST FLOW TRACER -->
     <section id="view-flow" class="panel-container" style="display: none;">
       <div class="section-header">
         <div>
@@ -1222,24 +680,38 @@
 
   </main>
 
+  <!-- SSL Renewal Log Output Modal -->
+  <div class="modal-overlay" id="sslModal">
+    <div class="modal-box">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+          <span>🔒</span>
+          <span id="sslModalTitle">Let's Encrypt SSL Renewal Output</span>
+        </h3>
+        <button class="btn-icon" onclick="closeSslModal()">✕</button>
+      </div>
+      <div class="log-terminal" id="sslTerminal" style="height: 320px; font-size: 11.5px;">
+        <div>Executing renewal script...</div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 8px;">
+        <button class="btn-action" onclick="closeSslModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Container -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- ==========================================================================
-       CLIENT APPLICATION LOGIC
-       ========================================================================== -->
+  <!-- Client Script Logic -->
   <script>
     var currentNamespace = 'dev';
     var servicesData = [];
+    var sslCertificates = [];
     var rawLogs = [];
     var currentLogLevel = 'ALL';
 
-    // 1. Theme Management (Dark & Light Mode)
     function initTheme() {
-      var savedTheme = localStorage.getItem('smartseth_theme');
-      if (!savedTheme) {
-        savedTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-      }
+      var savedTheme = localStorage.getItem('smartseth_theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
       setTheme(savedTheme);
     }
 
@@ -1253,12 +725,9 @@
     function setTheme(theme) {
       document.documentElement.setAttribute('data-theme', theme);
       var icon = document.getElementById('themeIcon');
-      if (icon) {
-        icon.innerText = theme === 'dark' ? '🌙' : '☀️';
-      }
+      if (icon) icon.innerText = theme === 'dark' ? '🌙' : '☀️';
     }
 
-    // 2. Toast System
     function showToast(message, type) {
       var container = document.getElementById('toastContainer');
       var toast = document.createElement('div');
@@ -1271,7 +740,6 @@
       }, 3500);
     }
 
-    // 3. Namespace Switcher (DEV <-> PROD)
     function switchNamespace(ns) {
       currentNamespace = ns;
       document.getElementById('btn-env-dev').className = 'env-btn ' + (ns === 'dev' ? 'active-dev' : '');
@@ -1286,23 +754,22 @@
       refreshAll();
     }
 
-    // 4. Tab Navigation
     function switchTab(tab) {
-      ['topology', 'pods', 'events', 'stream', 'flow'].forEach(function(t) {
+      ['topology', 'pods', 'ssl', 'events', 'stream', 'flow'].forEach(function(t) {
         var el = document.getElementById('tab-' + t);
         var view = document.getElementById('view-' + t);
         if (el) el.className = 'nav-tab ' + (t === tab ? 'active' : '');
         if (view) view.style.display = (t === tab ? 'block' : 'none');
       });
 
+      if (tab === 'ssl') loadSslCertificates();
       if (tab === 'stream') fetchServiceLogs();
       if (tab === 'events') loadEvents();
       if (tab === 'flow') executeTrace();
     }
 
-    // 5. Data Refresh & Metrics
     async function refreshAll() {
-      await Promise.all([loadMetrics(), loadServices(), loadEvents()]);
+      await Promise.all([loadMetrics(), loadServices(), loadEvents(), loadSslCertificates()]);
     }
 
     async function loadMetrics() {
@@ -1320,11 +787,6 @@
 
           document.getElementById('val-pods-running').innerText = data.cluster.runningPods || servicesData.length;
           document.getElementById('val-pods-total').innerText = '/ ' + (data.cluster.totalPods || servicesData.length) + ' pods';
-
-          if (data.system) {
-            document.getElementById('val-uptime').innerText = data.system.uptimeHours + ' hrs';
-            document.getElementById('val-load-avg').innerText = 'Load: ' + data.system.load1m;
-          }
         }
       } catch (e) {}
     }
@@ -1366,7 +828,95 @@
       } catch (e) {}
     }
 
-    // 6. Render Topology View
+    // SSL Certificate Management
+    async function loadSslCertificates() {
+      try {
+        var res = await fetch('/api/ssl/certificates');
+        var data = await res.json();
+        sslCertificates = data.certificates || [];
+        renderSslCards();
+
+        if (sslCertificates.length > 0) {
+          var minDays = Math.min(...sslCertificates.map(c => c.daysLeft || 88));
+          document.getElementById('val-ssl-days').innerText = minDays + ' days left';
+        }
+      } catch (e) {}
+    }
+
+    function renderSslCards() {
+      var grid = document.getElementById('sslCertGrid');
+      if (!grid) return;
+      var html = '';
+
+      sslCertificates.forEach(function(c) {
+        var isExpiring = c.daysLeft < 20;
+        var badgeClass = c.daysLeft <= 0 ? 'Expired' : (isExpiring ? 'ExpiringSoon' : 'Valid');
+        var sanHtml = (c.domains || []).map(d => '<span class="san-tag">🔒 ' + d + '</span>').join('');
+
+        html += '<div class="ssl-card">' +
+          '<div style="display: flex; justify-content: space-between; align-items: flex-start;">' +
+            '<div>' +
+              '<h4 style="font-size: 16px; font-weight: 800; color: var(--text-main);">' + c.name + '</h4>' +
+              '<div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Issuer: <b>' + (c.issuer || "Let's Encrypt") + '</b></div>' +
+            '</div>' +
+            '<span class="status-badge ' + badgeClass + '">' + (c.daysLeft > 0 ? '● ' + c.daysLeft + ' Days Left' : 'Expired') + '</span>' +
+          '</div>' +
+
+          '<div>' +
+            '<div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Covered Domains & Subdomains (' + (c.domains?.length || 1) + '):</div>' +
+            '<div class="san-tags-container">' + sanHtml + '</div>' +
+          '</div>' +
+
+          '<div style="background: var(--bg-input); padding: 8px 12px; border-radius: var(--radius-sm); font-size: 11.5px; font-family: var(--font-mono);">' +
+            '<div style="color: var(--text-muted);">Expires: <b style="color: var(--text-main);">' + (c.notAfter || '2026-12-26') + '</b></div>' +
+          '</div>' +
+
+          '<div class="card-actions">' +
+            '<button class="btn-action restart" onclick="triggerSslRenew(\'' + c.name + '\')">🔄 Renew Certificate</button>' +
+            '<button class="btn-action" onclick="syncSslSecrets()">📋 Sync to K8s</button>' +
+          '</div>' +
+        '</div>';
+      });
+
+      grid.innerHTML = html;
+    }
+
+    async function triggerSslRenew(domainName) {
+      document.getElementById('sslModalTitle').innerText = 'Renewing SSL: ' + (domainName || 'All Domains') + '...';
+      document.getElementById('sslTerminal').innerHTML = '<div style="color: var(--text-muted);">Executing certbot renewal and synchronizing Kubernetes TLS secrets...</div>';
+      document.getElementById('sslModal').style.display = 'flex';
+
+      try {
+        var res = await fetch('/api/ssl/renew', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ domain: domainName, force: true })
+        });
+        var data = await res.json();
+        document.getElementById('sslTerminal').innerHTML = '<pre style="white-space: pre-wrap; color: #34d399;">' + escapeHtml(data.log || data.message) + '</pre>';
+        showToast(data.message || 'Renewal complete', data.success ? 'success' : 'error');
+        loadSslCertificates();
+      } catch (err) {
+        document.getElementById('sslTerminal').innerHTML = '<div style="color: var(--error);">Renewal failed: ' + err.message + '</div>';
+        showToast('Renewal error: ' + err.message, 'error');
+      }
+    }
+
+    async function syncSslSecrets() {
+      showToast('Synchronizing host TLS certificates to Kubernetes secrets...');
+      try {
+        var res = await fetch('/api/ssl/sync-secrets', { method: 'POST' });
+        var data = await res.json();
+        showToast(data.message, data.success ? 'success' : 'error');
+      } catch (err) {
+        showToast('Sync error: ' + err.message, 'error');
+      }
+    }
+
+    function closeSslModal() {
+      document.getElementById('sslModal').style.display = 'none';
+    }
+
     function renderTopology() {
       var grid = document.getElementById('topologyGrid');
       var filter = (document.getElementById('topologyFilterInput')?.value || '').toLowerCase();
@@ -1430,7 +980,6 @@
       grid.innerHTML = html;
     }
 
-    // 7. Render Pods Table (Desktop) & Cards (Mobile)
     function renderPodsTable() {
       var tbody = document.getElementById('podsTableBody');
       var mobileList = document.getElementById('mobilePodsList');
@@ -1444,7 +993,6 @@
         var isRunning = status === 'Running';
         var replicas = s.deployment?.replicas !== undefined ? s.deployment.replicas : (isRunning ? 1 : 0);
 
-        // Desktop Table Row
         tableHtml += '<tr>' +
           '<td><b>' + s.icon + ' ' + s.name + '</b></td>' +
           '<td><span style="color:var(--text-muted)">' + s.category + '</span></td>' +
@@ -1466,7 +1014,6 @@
           '</td>' +
         '</tr>';
 
-        // Mobile Card Row
         mobileHtml += '<div class="service-card">' +
           '<div class="card-top">' +
             '<div class="card-icon-title">' +
@@ -1498,11 +1045,8 @@
       if (mobileList) mobileList.innerHTML = mobileHtml;
     }
 
-    function filterTopology() {
-      renderTopology();
-    }
+    function filterTopology() { renderTopology(); }
 
-    // 8. Pod Actions (Restart, Scale)
     async function restartService(serviceId) {
       showToast('Triggering rolling restart for ' + serviceId + '...');
       try {
@@ -1518,9 +1062,7 @@
         } else {
           showToast(data.message || 'Restart failed', 'error');
         }
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
+      } catch (err) { showToast(err.message, 'error'); }
     }
 
     async function scaleService(serviceId, replicas) {
@@ -1538,9 +1080,7 @@
         } else {
           showToast(data.message || 'Scale failed', 'error');
         }
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
+      } catch (err) { showToast(err.message, 'error'); }
     }
 
     function inspectServiceLogs(serviceId) {
@@ -1549,7 +1089,6 @@
       fetchServiceLogs();
     }
 
-    // 9. Live Log Streamer & Filters
     function setLogLevel(lvl) {
       currentLogLevel = lvl;
       ['all', 'err', 'warn'].forEach(function(l) {
@@ -1576,9 +1115,7 @@
       }
     }
 
-    function filterLogs() {
-      renderFilteredLogs();
-    }
+    function filterLogs() { renderFilteredLogs(); }
 
     function renderFilteredLogs() {
       var term = document.getElementById('logTerminal');
@@ -1592,13 +1129,8 @@
       var filtered = rawLogs.filter(function(line) {
         var lower = line.toLowerCase();
         if (query && !lower.includes(query)) return false;
-
-        if (currentLogLevel === 'ERR') {
-          return /error|fail|exception|fatal|500/i.test(line);
-        }
-        if (currentLogLevel === 'WARN') {
-          return /warn|warning|retry/i.test(line);
-        }
+        if (currentLogLevel === 'ERR') return /error|fail|exception|fatal|500/i.test(line);
+        if (currentLogLevel === 'WARN') return /warn|warning|retry/i.test(line);
         return true;
       });
 
@@ -1637,7 +1169,6 @@
       showToast('Downloaded log file');
     }
 
-    // 10. Flow Tracer
     function applyQuickFilter(val) {
       document.getElementById('queryInput').value = val;
       executeTrace();
@@ -1683,7 +1214,6 @@
       return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
-    // Initialize Theme and Boot App
     initTheme();
     refreshAll();
     setInterval(refreshAll, 10000);

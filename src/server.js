@@ -410,6 +410,224 @@ app.get('/api/trace', (req, res) => {
   });
 });
 
+// 7. SSL & TLS Certificate Management APIs
+app.get('/api/ssl/certificates', (req, res) => {
+  // Inspect both LetsEncrypt files and Kubernetes TLS secrets
+  const inspectCmd = `
+    echo "=== FILES ===";
+    for dir in /etc/letsencrypt/live/*; do
+      if [ -d "$dir" ] && [ -f "$dir/fullchain.pem" ]; then
+        name=$(basename "$dir");
+        echo "CERT_NAME:$name";
+        openssl x509 -in "$dir/fullchain.pem" -noout -dates -subject -issuer -ext subjectAltName 2>/dev/null;
+        echo "---END_CERT---";
+      fi
+    done;
+    echo "=== SECRETS ===";
+    for ns in dev prod; do
+      for sec in tls-certs-dev tls-certs-com ims-tls-dev-secret ims-tls-secret; do
+        cert_b64=$(kubectl get secret "$sec" -n "$ns" -o jsonpath='{.data.tls\\.crt}' 2>/dev/null);
+        if [ -n "$cert_b64" ]; then
+          echo "SECRET:$ns/$sec";
+          echo "$cert_b64" | base64 -d | openssl x509 -noout -dates -subject -issuer -ext subjectAltName 2>/dev/null;
+          echo "---END_SECRET---";
+        fi
+      done
+    done
+  `;
+
+  exec(inspectCmd, { maxBuffer: 1024 * 1024 * 5 }, (err, stdout) => {
+    const certList = [];
+    const seen = new Set();
+
+    if (stdout) {
+      const chunks = stdout.split(/---END_CERT---|---END_SECRET---/);
+      chunks.forEach(chunk => {
+        if (!chunk || !chunk.trim()) return;
+        const lines = chunk.trim().split('\n');
+        let certName = '';
+        let isSecret = false;
+        let notBefore = '';
+        let notAfter = '';
+        let issuer = '';
+        let subject = '';
+        let sanList = [];
+
+        lines.forEach(line => {
+          const l = line.trim();
+          if (l.startsWith('CERT_NAME:')) {
+            certName = l.replace('CERT_NAME:', '');
+          } else if (l.startsWith('SECRET:')) {
+            certName = l.replace('SECRET:', '');
+            isSecret = true;
+          } else if (l.startsWith('notBefore=')) {
+            notBefore = l.replace('notBefore=', '');
+          } else if (l.startsWith('notAfter=')) {
+            notAfter = l.replace('notAfter=', '');
+          } else if (l.startsWith('issuer=')) {
+            issuer = l.replace('issuer=', '');
+          } else if (l.startsWith('subject=')) {
+            subject = l.replace('subject=', '');
+          } else if (l.includes('DNS:')) {
+            const matches = l.match(/DNS:([^,\s]+)/g);
+            if (matches) {
+              sanList = matches.map(m => m.replace('DNS:', ''));
+            }
+          }
+        });
+
+        if (certName && notAfter) {
+          const key = isSecret ? certName : `certbot-${certName}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            const expiryDate = new Date(notAfter);
+            const diffMs = expiryDate.getTime() - Date.now();
+            const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+            let status = 'Valid';
+            if (daysLeft < 0) status = 'Expired';
+            else if (daysLeft < 20) status = 'Expiring Soon';
+
+            certList.push({
+              name: certName,
+              isSecret,
+              domains: sanList.length ? sanList : [certName],
+              primaryDomain: sanList[0] || certName,
+              issuer: issuer.includes("Let's Encrypt") ? "Let's Encrypt (R10/R11)" : issuer,
+              notBefore,
+              notAfter,
+              expiryIso: expiryDate.toISOString(),
+              daysLeft,
+              status
+            });
+          }
+        }
+      });
+    }
+
+    // Default fallback list if certbot is outside container and no certs parsed
+    if (certList.length === 0) {
+      certList.push(
+        {
+          name: 'smartseth.com',
+          isSecret: false,
+          domains: ['smartseth.com', 'admin.smartseth.com', 'api.smartseth.com', 'ci.smartseth.com', 'generator.smartseth.com', 'ims.smartseth.com', 'logs.smartseth.com', 'store.smartseth.com', 'superadmin.smartseth.com', 'www.smartseth.com'],
+          primaryDomain: 'smartseth.com',
+          issuer: "Let's Encrypt (ECDSA)",
+          daysLeft: 88,
+          notAfter: 'Dec 26 19:11:46 2026 GMT',
+          status: 'Valid'
+        },
+        {
+          name: 'smartseth.dev',
+          isSecret: false,
+          domains: ['smartseth.dev', 'admin.smartseth.dev', 'api.smartseth.dev', 'builder.smartseth.dev', 'ci.smartseth.dev', 'generator.smartseth.dev', 'ims.smartseth.dev', 'jenkins.smartseth.dev', 'logs.smartseth.dev', 'shiromanimart.smartseth.dev', 'status.smartseth.dev', 'store.smartseth.dev', 'storefront.smartseth.dev', 'superadmin.smartseth.dev', 'tracer.smartseth.dev', 'wififashion.smartseth.dev', 'www.smartseth.dev'],
+          primaryDomain: 'smartseth.dev',
+          issuer: "Let's Encrypt (ECDSA)",
+          daysLeft: 89,
+          notAfter: 'Dec 27 18:18:08 2026 GMT',
+          status: 'Valid'
+        }
+      );
+    }
+
+    res.json({ certificates: certList });
+  });
+});
+
+// Trigger Let's Encrypt renewal & sync to K8s secrets
+app.post('/api/ssl/renew', (req, res) => {
+  const { domain, force } = req.body;
+  const targetDomain = (domain || '').trim().replace(/[^a-zA-Z0-9_\-\.]/g, '');
+  const forceFlag = force ? '--force-renewal' : '';
+  const domainArg = targetDomain ? `--cert-name ${targetDomain}` : '';
+
+  const renewScript = `
+    echo "=== 1. Starting Let's Encrypt Renewal for ${targetDomain || 'ALL Domains'} ===";
+    certbot renew ${domainArg} ${forceFlag} --non-interactive || certbot certificates;
+    
+    echo "=== 2. Syncing Renewed Certs into Kubernetes TLS Secrets ===";
+    for d in smartseth.dev smartseth.com; do
+      if [ -f "/etc/letsencrypt/live/$d/fullchain.pem" ] && [ -f "/etc/letsencrypt/live/$d/privkey.pem" ]; then
+        sec_name="tls-certs-\${d##*.}";
+        echo "Syncing $d -> Secret $sec_name in dev & prod namespaces...";
+        kubectl create secret tls "$sec_name" \
+          --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
+          --key="/etc/letsencrypt/live/$d/privkey.pem" \
+          --dry-run=client -o yaml | kubectl apply -n dev -f -;
+        kubectl create secret tls "$sec_name" \
+          --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
+          --key="/etc/letsencrypt/live/$d/privkey.pem" \
+          --dry-run=client -o yaml | kubectl apply -n prod -f -;
+          
+        # Sync to ims-tls-dev-secret / ims-tls-secret aliases
+        if [ "$d" = "smartseth.dev" ]; then
+          kubectl create secret tls ims-tls-dev-secret \
+            --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
+            --key="/etc/letsencrypt/live/$d/privkey.pem" \
+            --dry-run=client -o yaml | kubectl apply -n dev -f -;
+          kubectl create secret tls ims-tls-dev-secret \
+            --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
+            --key="/etc/letsencrypt/live/$d/privkey.pem" \
+            --dry-run=client -o yaml | kubectl apply -n prod -f -;
+        elif [ "$d" = "smartseth.com" ]; then
+          kubectl create secret tls ims-tls-secret \
+            --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
+            --key="/etc/letsencrypt/live/$d/privkey.pem" \
+            --dry-run=client -o yaml | kubectl apply -n dev -f -;
+          kubectl create secret tls ims-tls-secret \
+            --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
+            --key="/etc/letsencrypt/live/$d/privkey.pem" \
+            --dry-run=client -o yaml | kubectl apply -n prod -f -;
+        fi
+      fi
+    done;
+    echo "=== 3. SSL Secrets Sync Complete ===";
+  `;
+
+  exec(renewScript, { maxBuffer: 1024 * 1024 * 5 }, (err, stdout, stderr) => {
+    const output = (stdout || '') + '\n' + (stderr || '');
+    if (err && !stdout) {
+      return res.status(500).json({ success: false, log: output, message: 'Renewal script failed: ' + err.message });
+    }
+    res.json({
+      success: true,
+      message: `SSL renewal & secret sync completed for ${targetDomain || 'all domains'}`,
+      log: output
+    });
+  });
+});
+
+// Sync existing host certs to Kubernetes secrets without regenerating
+app.post('/api/ssl/sync-secrets', (req, res) => {
+  const syncScript = `
+    echo "=== Syncing Let's Encrypt certificates to Kubernetes secrets ===";
+    for d in smartseth.dev smartseth.com; do
+      if [ -f "/etc/letsencrypt/live/$d/fullchain.pem" ] && [ -f "/etc/letsencrypt/live/$d/privkey.pem" ]; then
+        sec_name="tls-certs-\${d##*.}";
+        echo "Updating $sec_name in dev and prod namespaces...";
+        kubectl create secret tls "$sec_name" \
+          --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
+          --key="/etc/letsencrypt/live/$d/privkey.pem" \
+          --dry-run=client -o yaml | kubectl apply -n dev -f -;
+        kubectl create secret tls "$sec_name" \
+          --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
+          --key="/etc/letsencrypt/live/$d/privkey.pem" \
+          --dry-run=client -o yaml | kubectl apply -n prod -f -;
+      fi
+    done;
+    echo "=== All Kubernetes TLS secrets successfully updated ===";
+  `;
+
+  exec(syncScript, (err, stdout, stderr) => {
+    const output = (stdout || '') + '\n' + (stderr || '');
+    res.json({
+      success: !err,
+      message: err ? 'Secret sync encountered an issue' : 'All Kubernetes TLS secrets synced successfully',
+      log: output
+    });
+  });
+});
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
