@@ -45,6 +45,7 @@ pipeline {
             steps {
                 echo "===> Rolling out to Kubernetes shared deployment (dev namespace)..."
                 sh """
+                    kubectl apply -f k8s/tracer-ui.yaml
                     kubectl rollout restart deployment/web-log-viewer -n dev
                     kubectl rollout status deployment/web-log-viewer -n dev --timeout=120s
                 """
