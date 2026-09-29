@@ -597,6 +597,99 @@ app.post('/api/ssl/renew', (req, res) => {
   });
 });
 
+// Issue new SSL certificate or expand existing with custom domains
+app.post('/api/ssl/issue', (req, res) => {
+  const { certName, domains, email, secretName, challengeType } = req.body;
+  const cleanCertName = (certName || 'smartseth.dev').trim().replace(/[^a-zA-Z0-9_\-\.]/g, '');
+  const cleanEmail = (email || 'admin@smartseth.com').trim();
+  const cleanSecretName = (secretName || `tls-certs-${cleanCertName.split('.').pop()}`).trim().replace(/[^a-zA-Z0-9_\-]/g, '');
+  
+  const rawDomains = Array.isArray(domains) ? domains : (typeof domains === 'string' ? domains.split(/[,\s\n]+/) : []);
+  const cleanDomains = rawDomains
+    .map(d => d.trim().toLowerCase().replace(/[^a-z0-9_\-\.]/g, ''))
+    .filter(d => d.length > 3 && d.includes('.'));
+
+  if (cleanDomains.length === 0) {
+    return res.status(400).json({ success: false, message: 'Please provide at least one valid domain or subdomain.' });
+  }
+
+  const domainFlags = cleanDomains.map(d => `-d ${d}`).join(' ');
+  const challengeFlag = challengeType === 'standalone' 
+    ? '--standalone' 
+    : '--webroot -w /var/www/certbot';
+
+  const issueScript = `
+    echo "==========================================================";
+    echo "🔒 Let's Encrypt Certificate Request / Expansion";
+    echo "Certificate Group: ${cleanCertName}";
+    echo "Target Domains: ${cleanDomains.join(', ')}";
+    echo "Challenge Method: ${challengeType || 'webroot (/var/www/certbot)'}";
+    echo "Secret Sync Target: ${cleanSecretName}";
+    echo "==========================================================";
+
+    # Ensure webroot directory exists
+    mkdir -p /var/www/certbot;
+
+    # Run Certbot to issue or expand certificate
+    certbot certonly \\
+      ${challengeFlag} \\
+      --non-interactive \\
+      --agree-tos \\
+      --email "${cleanEmail}" \\
+      --cert-name "${cleanCertName}" \\
+      --expand \\
+      ${domainFlags} || {
+        echo "⚠️ Webroot challenge failed or certbot returned error. Trying with certbot certificates info...";
+        certbot certificates;
+      }
+
+    echo "=== Syncing Generated Certificate to Kubernetes Secrets ===";
+    CERT_DIR="/etc/letsencrypt/live/${cleanCertName}";
+    if [ -f "$CERT_DIR/fullchain.pem" ] && [ -f "$CERT_DIR/privkey.pem" ]; then
+      for ns in dev prod; do
+        echo "Applying to namespace [$ns] -> Secret: [${cleanSecretName}]...";
+        kubectl create secret tls "${cleanSecretName}" \\
+          --cert="$CERT_DIR/fullchain.pem" \\
+          --key="$CERT_DIR/privkey.pem" \\
+          --dry-run=client -o yaml | kubectl apply -n "$ns" -f -;
+          
+        # Also sync to default aliases for instant Ingress pickup
+        if echo "${cleanCertName}" | grep -q "dev"; then
+          kubectl create secret tls ims-tls-dev-secret \\
+            --cert="$CERT_DIR/fullchain.pem" \\
+            --key="$CERT_DIR/privkey.pem" \\
+            --dry-run=client -o yaml | kubectl apply -n "$ns" -f -;
+          kubectl create secret tls tls-certs-dev \\
+            --cert="$CERT_DIR/fullchain.pem" \\
+            --key="$CERT_DIR/privkey.pem" \\
+            --dry-run=client -o yaml | kubectl apply -n "$ns" -f -;
+        else
+          kubectl create secret tls ims-tls-secret \\
+            --cert="$CERT_DIR/fullchain.pem" \\
+            --key="$CERT_DIR/privkey.pem" \\
+            --dry-run=client -o yaml | kubectl apply -n "$ns" -f -;
+          kubectl create secret tls tls-certs-com \\
+            --cert="$CERT_DIR/fullchain.pem" \\
+            --key="$CERT_DIR/privkey.pem" \\
+            --dry-run=client -o yaml | kubectl apply -n "$ns" -f -;
+        fi
+      done
+      echo "✅ Kubernetes TLS secrets updated successfully!";
+    else
+      echo "❌ Certificate files not found in $CERT_DIR. Skipping secret creation.";
+    fi
+  `;
+
+  exec(issueScript, { maxBuffer: 1024 * 1024 * 10 }, (err, stdout, stderr) => {
+    const output = (stdout || '') + '\n' + (stderr || '');
+    res.json({
+      success: !err || output.includes('Successfully received certificate') || output.includes('Certificate not yet due for renewal'),
+      message: `SSL Issue/Expand execution completed for ${cleanDomains.length} domains`,
+      log: output
+    });
+  });
+});
+
 // Sync existing host certs to Kubernetes secrets without regenerating
 app.post('/api/ssl/sync-secrets', (req, res) => {
   const syncScript = `
@@ -613,6 +706,26 @@ app.post('/api/ssl/sync-secrets', (req, res) => {
           --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
           --key="/etc/letsencrypt/live/$d/privkey.pem" \
           --dry-run=client -o yaml | kubectl apply -n prod -f -;
+
+        if [ "$d" = "smartseth.dev" ]; then
+          kubectl create secret tls ims-tls-dev-secret \
+            --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
+            --key="/etc/letsencrypt/live/$d/privkey.pem" \
+            --dry-run=client -o yaml | kubectl apply -n dev -f -;
+          kubectl create secret tls ims-tls-dev-secret \
+            --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
+            --key="/etc/letsencrypt/live/$d/privkey.pem" \
+            --dry-run=client -o yaml | kubectl apply -n prod -f -;
+        elif [ "$d" = "smartseth.com" ]; then
+          kubectl create secret tls ims-tls-secret \
+            --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
+            --key="/etc/letsencrypt/live/$d/privkey.pem" \
+            --dry-run=client -o yaml | kubectl apply -n dev -f -;
+          kubectl create secret tls ims-tls-secret \
+            --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
+            --key="/etc/letsencrypt/live/$d/privkey.pem" \
+            --dry-run=client -o yaml | kubectl apply -n prod -f -;
+        fi
       fi
     done;
     echo "=== All Kubernetes TLS secrets successfully updated ===";

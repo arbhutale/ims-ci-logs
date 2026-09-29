@@ -63,6 +63,8 @@ spec:
         volumeMounts:
         - name: letsencrypt-certs
           mountPath: /etc/letsencrypt
+        - name: certbot-webroot
+          mountPath: /var/www/certbot
         resources:
           requests:
             cpu: 20m
@@ -74,6 +76,10 @@ spec:
       - name: letsencrypt-certs
         hostPath:
           path: /etc/letsencrypt
+          type: DirectoryOrCreate
+      - name: certbot-webroot
+        hostPath:
+          path: /var/www/certbot
           type: DirectoryOrCreate
 ---
 apiVersion: v1

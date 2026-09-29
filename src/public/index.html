@@ -329,7 +329,7 @@
     .timeline-card.warn { border-left: 4px solid var(--warn); }
     .timeline-card.success { border-left: 4px solid var(--success); }
 
-    /* SSL Grid */
+    /* SSL Grid & Domain Manager */
     .ssl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px; margin-top: 14px; }
     .ssl-card {
       background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
@@ -346,6 +346,46 @@
     .san-tag {
       background: var(--bg-input); border: 1px solid var(--border); border-radius: 4px;
       padding: 2px 7px; font-size: 11px; font-family: var(--font-mono); color: var(--text-muted);
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .san-tag.interactive {
+      background: rgba(14, 165, 233, 0.12); border-color: rgba(14, 165, 233, 0.3);
+      color: var(--primary); font-weight: 600; padding: 4px 9px;
+    }
+    .san-tag.interactive .tag-remove {
+      cursor: pointer; opacity: 0.6; font-size: 13px; line-height: 1;
+    }
+    .san-tag.interactive .tag-remove:hover {
+      opacity: 1; color: var(--error);
+    }
+    .preset-group {
+      margin-bottom: 12px;
+    }
+    .preset-label {
+      font-size: 11.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+    }
+    .preset-chips {
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .preset-chip {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px;
+      padding: 4px 10px; font-size: 11.5px; font-weight: 600; color: var(--text-main);
+      cursor: pointer; transition: all 0.2s; user-select: none;
+    }
+    .preset-chip:hover {
+      border-color: var(--primary); color: var(--primary); transform: translateY(-1px);
+    }
+    .preset-chip.selected {
+      background: var(--primary); border-color: var(--primary); color: #fff;
+    }
+    .form-row {
+      display: flex; gap: 10px; align-items: center;
+    }
+    .form-group {
+      display: flex; flex-direction: column; gap: 5px; flex: 1;
+    }
+    .form-label {
+      font-size: 11.5px; font-weight: 700; color: var(--text-muted);
     }
 
     /* Modal */
@@ -356,6 +396,7 @@
     .modal-box {
       background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
       max-width: 650px; width: 100%; padding: 24px; box-shadow: var(--shadow-lg); display: flex; flex-direction: column; gap: 16px;
+      max-height: 90vh; overflow-y: auto;
     }
 
     /* Toasts */
@@ -537,9 +578,10 @@
       <div class="section-header">
         <div>
           <div class="section-title">🔒 Let's Encrypt SSL / TLS Certificate Manager</div>
-          <div class="section-desc">Inspect validity, auto-renew certificates, and sync Kubernetes TLS secrets with 1-click (Zero SSH required)</div>
+          <div class="section-desc">Inspect validity, add custom/storefront subdomains, auto-renew certificates, and sync Kubernetes TLS secrets with 1-click (Zero SSH required)</div>
         </div>
-        <div style="display: flex; gap: 8px;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button class="btn-action restart" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff;" onclick="openSslIssueModal()">➕ Add / Issue Subdomain SSL</button>
           <button class="btn-action" onclick="syncSslSecrets()" title="Sync certs to Kubernetes secrets">📋 Sync K8s Secrets</button>
           <button class="btn-action restart" style="background: var(--primary); color: #fff;" onclick="triggerSslRenew('')">🔄 Renew All Certificates</button>
         </div>
@@ -680,18 +722,134 @@
 
   </main>
 
+  <!-- SSL Issue & Domain Manager Modal -->
+  <div class="modal-overlay" id="sslIssueModal">
+    <div class="modal-box" style="max-width: 720px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+          <span>🔒</span>
+          <span>Add & Issue SSL for Custom / Storefront Subdomains</span>
+        </h3>
+        <button class="btn-icon" onclick="closeSslIssueModal()">✕</button>
+      </div>
+
+      <!-- Environment & Base Domain Selection -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Target Environment & Certificate Group:</label>
+          <select id="sslTargetCertGroup" class="select-dropdown" onchange="onCertGroupChanged()">
+            <option value="smartseth.dev">DEV Cluster (*.smartseth.dev -> Secret: tls-certs-dev)</option>
+            <option value="smartseth.com">PROD Cluster (*.smartseth.com -> Secret: tls-certs-com)</option>
+            <option value="custom">Custom Certificate Group...</option>
+          </select>
+        </div>
+        <div class="form-group" id="customCertGroupRow" style="display: none;">
+          <label class="form-label">Custom Certificate Name:</label>
+          <input type="text" id="sslCustomCertName" class="search-input" placeholder="e.g. mydomain.com" />
+        </div>
+      </div>
+
+      <!-- Preset Category Quick Adds -->
+      <div class="preset-group">
+        <div class="preset-label">⚡ Quick Presets (Click to add to certificate):</div>
+        
+        <div style="display: flex; flex-direction: column; gap: 8px; background: var(--bg-card); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+          <div>
+            <span style="font-size: 11px; color: var(--text-muted); font-weight: 700;">🛍️ Storefront Subdomains:</span>
+            <div class="preset-chips" style="margin-top: 4px;">
+              <span class="preset-chip" onclick="addPresetSubdomain('wififashion')">wififashion.</span>
+              <span class="preset-chip" onclick="addPresetSubdomain('shiromanimart')">shiromanimart.</span>
+              <span class="preset-chip" onclick="addPresetSubdomain('storefront')">storefront.</span>
+              <span class="preset-chip" onclick="addPresetSubdomain('store')">store.</span>
+            </div>
+          </div>
+
+          <div>
+            <span style="font-size: 11px; color: var(--text-muted); font-weight: 700;">⚙️ App Generator Subdomains:</span>
+            <div class="preset-chips" style="margin-top: 4px;">
+              <span class="preset-chip" onclick="addPresetSubdomain('generator')">generator.</span>
+              <span class="preset-chip" onclick="addPresetSubdomain('builder')">builder.</span>
+              <span class="preset-chip" onclick="addPresetSubdomain('mobile')">mobile.</span>
+            </div>
+          </div>
+
+          <div>
+            <span style="font-size: 11px; color: var(--text-muted); font-weight: 700;">🏗️ CI/CD & Observability:</span>
+            <div class="preset-chips" style="margin-top: 4px;">
+              <span class="preset-chip" onclick="addPresetSubdomain('ci')">ci.</span>
+              <span class="preset-chip" onclick="addPresetSubdomain('jenkins')">jenkins.</span>
+              <span class="preset-chip" onclick="addPresetSubdomain('logs')">logs.</span>
+              <span class="preset-chip" onclick="addPresetSubdomain('tracer')">tracer.</span>
+            </div>
+          </div>
+
+          <div>
+            <span style="font-size: 11px; color: var(--text-muted); font-weight: 700;">🏢 IMS Admin & Core Services:</span>
+            <div class="preset-chips" style="margin-top: 4px;">
+              <span class="preset-chip" onclick="addPresetSubdomain('ims')">ims.</span>
+              <span class="preset-chip" onclick="addPresetSubdomain('admin')">admin.</span>
+              <span class="preset-chip" onclick="addPresetSubdomain('api')">api.</span>
+              <span class="preset-chip" onclick="addPresetSubdomain('superadmin')">superadmin.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manual Custom Subdomain / Domain Input -->
+      <div class="form-group">
+        <label class="form-label">✍️ Add Custom Subdomain or Full Domain Name:</label>
+        <div class="form-row">
+          <input type="text" id="sslCustomDomainInput" class="search-input" placeholder="e.g. newbrand or newbrand.smartseth.dev or customdomain.com" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomDomainFromInput();}" />
+          <button class="btn-action restart" style="background: var(--primary); color: #fff; white-space: nowrap;" onclick="addCustomDomainFromInput()">+ Add Domain</button>
+        </div>
+        <div style="font-size: 11px; color: var(--text-muted);">You can also enter comma-separated domains (e.g. <code>store1.smartseth.com, store2.smartseth.com</code>).</div>
+      </div>
+
+      <!-- Active Selected Domains List -->
+      <div class="form-group">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label class="form-label">🎯 Domains Included in Certificate (<span id="sslDomainCount">0</span>):</label>
+          <button class="btn-action" style="padding: 2px 8px; font-size: 11px;" onclick="clearSslDomainTags()">Clear All</button>
+        </div>
+        <div class="san-tags-container" id="sslSelectedTagsContainer" style="min-height: 55px; max-height: 120px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px;">
+          <!-- Dynamically added tags -->
+        </div>
+      </div>
+
+      <!-- Advanced Options -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Validation Method:</label>
+          <select id="sslChallengeMethod" class="select-dropdown">
+            <option value="webroot">Webroot /var/www/certbot (Zero Downtime - Recommended)</option>
+            <option value="standalone">Standalone (Port 80)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Admin Email:</label>
+          <input type="text" id="sslAdminEmail" class="search-input" value="admin@smartseth.com" />
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;">
+        <button class="btn-action" onclick="closeSslIssueModal()">Cancel</button>
+        <button class="btn-action restart" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-weight: 700;" onclick="executeSslIssue()">🚀 Issue / Expand SSL & Sync K8s</button>
+      </div>
+    </div>
+  </div>
+
   <!-- SSL Renewal Log Output Modal -->
   <div class="modal-overlay" id="sslModal">
     <div class="modal-box">
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <h3 style="font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
           <span>🔒</span>
-          <span id="sslModalTitle">Let's Encrypt SSL Renewal Output</span>
+          <span id="sslModalTitle">Let's Encrypt SSL Execution Output</span>
         </h3>
         <button class="btn-icon" onclick="closeSslModal()">✕</button>
       </div>
       <div class="log-terminal" id="sslTerminal" style="height: 320px; font-size: 11.5px;">
-        <div>Executing renewal script...</div>
+        <div>Executing Let's Encrypt script...</div>
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 8px;">
         <button class="btn-action" onclick="closeSslModal()">Close</button>
@@ -828,6 +986,168 @@
       } catch (e) {}
     }
 
+    // SSL Domain Manager State
+    var selectedSslDomains = new Set();
+
+    function openSslIssueModal(targetCert) {
+      var select = document.getElementById('sslTargetCertGroup');
+      if (targetCert) {
+        if (targetCert === 'smartseth.dev' || targetCert === 'smartseth.com') {
+          select.value = targetCert;
+        } else {
+          select.value = 'custom';
+          document.getElementById('sslCustomCertName').value = targetCert;
+        }
+      } else {
+        select.value = currentNamespace === 'prod' ? 'smartseth.com' : 'smartseth.dev';
+      }
+      onCertGroupChanged();
+
+      // If opening for existing cert, pre-populate existing domains
+      selectedSslDomains.clear();
+      var found = sslCertificates.find(function(c) { return c.name === select.value; });
+      if (found && found.domains) {
+        found.domains.forEach(function(d) { selectedSslDomains.add(d); });
+      } else {
+        var base = select.value === 'custom' ? (document.getElementById('sslCustomCertName').value || 'smartseth.dev') : select.value;
+        selectedSslDomains.add(base);
+        selectedSslDomains.add('www.' + base);
+        selectedSslDomains.add('api.' + base);
+        selectedSslDomains.add('ims.' + base);
+        selectedSslDomains.add('generator.' + base);
+      }
+
+      renderSslDomainTags();
+      document.getElementById('sslIssueModal').style.display = 'flex';
+    }
+
+    function closeSslIssueModal() {
+      document.getElementById('sslIssueModal').style.display = 'none';
+    }
+
+    function onCertGroupChanged() {
+      var val = document.getElementById('sslTargetCertGroup').value;
+      var customRow = document.getElementById('customCertGroupRow');
+      if (val === 'custom') {
+        customRow.style.display = 'flex';
+      } else {
+        customRow.style.display = 'none';
+      }
+    }
+
+    function getBaseDomainForSsl() {
+      var val = document.getElementById('sslTargetCertGroup').value;
+      if (val === 'custom') {
+        var custom = (document.getElementById('sslCustomCertName').value || '').trim();
+        return custom || 'smartseth.dev';
+      }
+      return val;
+    }
+
+    function addPresetSubdomain(prefix) {
+      var base = getBaseDomainForSsl();
+      var fqdn = prefix + '.' + base;
+      selectedSslDomains.add(fqdn);
+      renderSslDomainTags();
+      showToast('Added ' + fqdn);
+    }
+
+    function addCustomDomainFromInput() {
+      var input = document.getElementById('sslCustomDomainInput');
+      var val = (input.value || '').trim();
+      if (!val) return;
+
+      var base = getBaseDomainForSsl();
+      var parts = val.split(/[,\s]+/);
+
+      parts.forEach(function(p) {
+        var clean = p.trim().toLowerCase().replace(/[^a-z0-9_\-\.]/g, '');
+        if (!clean) return;
+
+        // If user typed a single subdomain word e.g. "mytenant", append base domain
+        if (!clean.includes('.')) {
+          clean = clean + '.' + base;
+        }
+        selectedSslDomains.add(clean);
+      });
+
+      input.value = '';
+      renderSslDomainTags();
+      showToast('Added ' + parts.length + ' domain(s)');
+    }
+
+    function removeSslDomainTag(domain) {
+      selectedSslDomains.delete(domain);
+      renderSslDomainTags();
+    }
+
+    function clearSslDomainTags() {
+      selectedSslDomains.clear();
+      renderSslDomainTags();
+    }
+
+    function renderSslDomainTags() {
+      var container = document.getElementById('sslSelectedTagsContainer');
+      var countEl = document.getElementById('sslDomainCount');
+      if (!container) return;
+
+      var domains = Array.from(selectedSslDomains);
+      countEl.innerText = domains.length;
+
+      if (domains.length === 0) {
+        container.innerHTML = '<div style="color: var(--text-muted); font-size: 11.5px; padding: 4px;">No domains selected. Click presets above or enter custom subdomains below.</div>';
+        return;
+      }
+
+      var html = '';
+      domains.forEach(function(d) {
+        html += '<span class="san-tag interactive">' +
+          '<span>🔒 ' + escapeHtml(d) + '</span>' +
+          '<span class="tag-remove" onclick="removeSslDomainTag(\'' + escapeHtml(d) + '\')">✕</span>' +
+        '</span>';
+      });
+
+      container.innerHTML = html;
+    }
+
+    async function executeSslIssue() {
+      var domains = Array.from(selectedSslDomains);
+      if (domains.length === 0) {
+        showToast('Please add at least one domain to the certificate', 'error');
+        return;
+      }
+
+      var certName = getBaseDomainForSsl();
+      var challengeType = document.getElementById('sslChallengeMethod').value;
+      var email = document.getElementById('sslAdminEmail').value || 'admin@smartseth.com';
+
+      closeSslIssueModal();
+      document.getElementById('sslModalTitle').innerText = 'Requesting SSL for ' + domains.length + ' domains (' + certName + ')...';
+      document.getElementById('sslTerminal').innerHTML = '<div style="color: var(--text-muted);">Executing certbot certonly and auto-syncing Kubernetes TLS secrets...</div>';
+      document.getElementById('sslModal').style.display = 'flex';
+
+      try {
+        var res = await fetch('/api/ssl/issue', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            certName: certName,
+            domains: domains,
+            email: email,
+            challengeType: challengeType
+          })
+        });
+
+        var data = await res.json();
+        document.getElementById('sslTerminal').innerHTML = '<pre style="white-space: pre-wrap; color: #34d399;">' + escapeHtml(data.log || data.message) + '</pre>';
+        showToast(data.message || 'SSL Certificate Process Completed', data.success ? 'success' : 'error');
+        loadSslCertificates();
+      } catch (err) {
+        document.getElementById('sslTerminal').innerHTML = '<div style="color: var(--error);">SSL request failed: ' + err.message + '</div>';
+        showToast('SSL Error: ' + err.message, 'error');
+      }
+    }
+
     // SSL Certificate Management
     async function loadSslCertificates() {
       try {
@@ -863,7 +1183,10 @@
           '</div>' +
 
           '<div>' +
-            '<div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Covered Domains & Subdomains (' + (c.domains?.length || 1) + '):</div>' +
+            '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">' +
+              '<div style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Covered Domains (' + (c.domains?.length || 1) + '):</div>' +
+              '<button class="btn-action" style="padding: 2px 7px; font-size: 10.5px; font-weight: 700; color: var(--primary);" onclick="openSslIssueModal(\'' + c.name + '\')">+ Add Subdomain</button>' +
+            '</div>' +
             '<div class="san-tags-container">' + sanHtml + '</div>' +
           '</div>' +
 
