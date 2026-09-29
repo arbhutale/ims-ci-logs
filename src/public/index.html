@@ -1,55 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>⚡ IMS Live Flow Tracer, Telemetry & Observability Hub</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartSeth | Cluster Topology, Observability & Pod Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-dark: #07090e;
-      --bg-card: #0e131f;
-      --bg-card-hover: #141b2d;
-      --border: #1e293b;
-      --border-accent: #334155;
-      --primary: #6366f1;
-      --primary-light: #818cf8;
-      --primary-glow: rgba(99, 102, 241, 0.25);
-      --accent: #38bdf8;
-      --success: #10b981;
-      --success-bg: rgba(16, 185, 129, 0.12);
-      --error: #f43f5e;
-      --error-bg: rgba(244, 63, 94, 0.15);
-      --warn: #f59e0b;
-      --warn-bg: rgba(245, 158, 11, 0.12);
+      --bg-base: #06090e;
+      --bg-surface: #0c111a;
+      --bg-card: #121826;
+      --bg-card-hover: #172133;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-focus: #6366f1;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
-      --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --text-dim: #64748b;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent: #38bdf8;
+      --success: #10b981;
+      --warn: #f59e0b;
+      --error: #ef4444;
+      --font-main: 'Inter', system-ui, -apple-system, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background-color: var(--bg-dark);
+      background-color: var(--bg-base);
       color: var(--text-main);
       font-family: var(--font-main);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* Top Navbar */
+    /* Top Navigation Bar */
     .navbar {
-      background: rgba(14, 19, 31, 0.85);
-      backdrop-filter: blur(12px);
+      background: rgba(12, 17, 26, 0.85);
+      backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
-      padding: 14px 28px;
+      padding: 12px 24px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
       position: sticky;
       top: 0;
       z-index: 100;
+      gap: 16px;
     }
     .nav-brand {
       display: flex;
@@ -59,59 +61,61 @@
     .brand-logo {
       width: 38px;
       height: 38px;
-      background: linear-gradient(135deg, #6366f1, #38bdf8);
       border-radius: 10px;
+      background: linear-gradient(135deg, #6366f1, #38bdf8);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 20px;
-      box-shadow: 0 0 15px var(--primary-glow);
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
     }
     .brand-title {
+      font-size: 16px;
       font-weight: 800;
-      font-size: 18px;
       letter-spacing: -0.02em;
-      background: linear-gradient(to right, #fff, #94a3b8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: #fff;
     }
 
+    /* Dynamic Environment Toggle */
     .env-toggle {
-      display: flex;
-      background: #090d16;
+      display: inline-flex;
+      background: #06090e;
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 30px;
       padding: 3px;
-      gap: 4px;
+      gap: 2px;
+      margin-left: 10px;
     }
     .env-btn {
-      padding: 4px 12px;
-      font-size: 11px;
-      font-weight: 700;
-      border-radius: 6px;
-      cursor: pointer;
-      color: var(--text-muted);
-      border: none;
       background: transparent;
-      transition: all 0.2s;
+      border: none;
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      letter-spacing: 0.05em;
     }
     .env-btn.active-dev {
-      background: rgba(99, 102, 241, 0.25);
-      color: #818cf8;
-      border: 1px solid rgba(99, 102, 241, 0.4);
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: #fff;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.4);
     }
     .env-btn.active-prod {
-      background: rgba(244, 63, 94, 0.25);
-      color: #f43f5e;
-      border: 1px solid rgba(244, 63, 94, 0.4);
+      background: linear-gradient(135deg, #059669, #047857);
+      color: #fff;
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.4);
     }
 
+    /* Navigation Tabs */
     .nav-tabs {
       display: flex;
-      gap: 8px;
-      background: #090d16;
+      gap: 6px;
+      background: #080c14;
       padding: 4px;
-      border-radius: 10px;
+      border-radius: 12px;
       border: 1px solid var(--border);
     }
     .nav-tab {
@@ -121,56 +125,86 @@
       font-weight: 600;
       color: var(--text-muted);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .nav-tab:hover { color: var(--text-main); }
-    .nav-tab.active {
-      background: var(--primary);
+    .nav-tab:hover {
       color: #fff;
-      box-shadow: 0 2px 8px var(--primary-glow);
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .nav-tab.active {
+      background: #1e293b;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
     .live-indicator {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 13px;
-      color: var(--success);
-      font-weight: 600;
-      background: var(--success-bg);
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
       padding: 6px 12px;
       border-radius: 20px;
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      font-size: 12px;
+      font-weight: 600;
+      color: #6ee7b7;
     }
     .pulse-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: var(--success);
-      box-shadow: 0 0 10px var(--success);
-      animation: pulse 1.8s infinite;
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+      animation: pulse 2s infinite;
     }
     @keyframes pulse {
-      0% { transform: scale(0.9); opacity: 0.7; }
-      50% { transform: scale(1.3); opacity: 1; }
-      100% { transform: scale(0.9); opacity: 0.7; }
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .btn-refresh {
+      background: #1e293b;
+      border: 1px solid var(--border);
+      color: #f8fafc;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .btn-refresh:hover {
+      background: #334155;
     }
 
     /* Main Container */
     .main-content {
-      max-width: 1440px;
+      flex: 1;
+      max-width: 1600px;
       width: 100%;
       margin: 0 auto;
       padding: 24px;
-      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
     }
 
-    /* Global Metrics Stat Banner */
+    /* Metrics Stat Banner */
     .metrics-banner {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 16px;
-      margin-bottom: 24px;
     }
     .metric-card {
       background: var(--bg-card);
@@ -179,367 +213,340 @@
       padding: 16px 20px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, #6366f1, #38bdf8);
     }
     .metric-title {
       font-size: 12px;
-      font-weight: 700;
-      color: var(--text-muted);
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      color: var(--text-muted);
     }
     .metric-value-row {
       display: flex;
       align-items: baseline;
-      justify-content: space-between;
+      gap: 8px;
     }
     .metric-value {
-      font-size: 22px;
+      font-size: 24px;
       font-weight: 800;
-      color: #fff;
       font-family: var(--font-mono);
+      color: #fff;
     }
     .metric-sub {
-      font-size: 12px;
-      color: var(--text-muted);
+      font-size: 13px;
+      color: var(--accent);
+      font-weight: 600;
+      font-family: var(--font-mono);
     }
     .metric-progress {
-      height: 6px;
-      background: #141b2d;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.06);
       border-radius: 4px;
       overflow: hidden;
       margin-top: 4px;
     }
     .metric-progress-bar {
       height: 100%;
-      background: linear-gradient(90deg, #6366f1, #38bdf8);
-      border-radius: 4px;
-      transition: width 0.4s ease;
+      background: #6366f1;
+      transition: width 0.3s ease;
     }
 
-    /* Service Architecture Topology Map */
-    .topology-container {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-    }
+    /* Section Header */
     .section-header {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 18px;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
     }
     .section-title {
-      font-size: 16px;
-      font-weight: 700;
       display: flex;
       align-items: center;
-      gap: 8px;
-      color: var(--text-main);
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
     }
-    
-    .topology-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+
+    /* Topology Grid */
+    .topology-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+    }
+    .filter-bar {
+      display: flex;
       gap: 12px;
-      align-items: stretch;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
     }
-    .service-node {
+    .filter-input {
       background: #090d16;
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px 10px;
-      text-align: center;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      cursor: pointer;
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: #fff;
+      font-size: 13px;
+      min-width: 260px;
+      outline: none;
+    }
+    .filter-input:focus {
+      border-color: var(--primary);
+    }
+
+    .topology-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .service-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      gap: 14px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
     }
-    .service-node:hover {
-      border-color: var(--primary-light);
+    .service-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(99, 102, 241, 0.4);
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     }
-    .service-node.active-hop {
-      border-color: var(--success);
-      background: rgba(16, 185, 129, 0.08);
-      box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
-    }
-    .service-node.failed-hop {
-      border-color: var(--error);
-      background: var(--error-bg);
-      box-shadow: 0 0 20px rgba(244, 63, 94, 0.4);
-      animation: pulse-border 1.5s infinite;
-    }
-    @keyframes pulse-border {
-      0% { border-color: var(--error); }
-      50% { border-color: #ff8fa3; }
-      100% { border-color: var(--error); }
-    }
-    .node-icon { font-size: 22px; margin-bottom: 4px; }
-    .node-name { font-size: 12px; font-weight: 700; color: #e2e8f0; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .node-port { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); margin-bottom: 6px; }
-    .node-status {
-      display: inline-block;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--success);
-      margin-right: 4px;
-    }
-    .node-status.err { background: var(--error); }
-    .node-usage-row {
+    .card-top {
       display: flex;
+      align-items: flex-start;
       justify-content: space-between;
-      font-size: 10px;
-      font-family: var(--font-mono);
-      background: #141b2d;
-      padding: 4px 6px;
-      border-radius: 6px;
-      color: #93c5fd;
-      margin-top: 4px;
+      gap: 10px;
     }
-
-    /* Category Group Headers */
-    .category-group {
-      margin-bottom: 24px;
-    }
-    .category-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #cbd5e1;
-      margin-bottom: 12px;
+    .card-icon-title {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 10px;
     }
-
-    /* Search Flow Panel */
-    .search-panel {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
-    .search-input-group {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    .search-input {
-      flex: 1;
+    .service-icon {
+      font-size: 26px;
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
       background: #090d16;
-      border: 1px solid #2d3748;
-      border-radius: 12px;
-      padding: 14px 18px;
-      color: #fff;
-      font-size: 15px;
-      font-family: var(--font-mono);
-      outline: none;
-      transition: all 0.2s;
-    }
-    .search-input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px var(--primary-glow);
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, #6366f1, #4f46e5);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      padding: 0 28px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s;
-      box-shadow: 0 4px 14px var(--primary-glow);
-    }
-    .btn-primary:hover {
-      background: linear-gradient(135deg, #4f46e5, #4338ca);
-      transform: translateY(-1px);
-    }
-
-    .quick-chips {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .chips-label { font-size: 12px; font-weight: 600; color: var(--text-muted); }
-    .chip {
-      background: #141b2d;
-      border: 1px solid #2d3748;
-      color: #93c5fd;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-family: var(--font-mono);
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .chip:hover {
-      background: var(--primary);
-      color: #fff;
-      border-color: var(--primary);
-    }
-
-    /* Flow Hop Sequence Banner */
-    .flow-summary-banner {
-      display: none;
-      margin-top: 20px;
-      padding: 16px 20px;
-      border-radius: 12px;
-      background: #090d16;
-      border: 1px solid var(--border);
-    }
-    .flow-summary-banner.visible { display: block; }
-    .flow-summary-banner.failed { border-left: 4px solid var(--error); background: rgba(244, 63, 94, 0.06); }
-    .flow-summary-banner.success { border-left: 4px solid var(--success); background: rgba(16, 185, 129, 0.06); }
-
-    .hop-sequence {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
-    .hop-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      background: #141b2d;
-      border: 1px solid var(--border);
-    }
-    .hop-item.failed {
-      background: var(--error-bg);
-      border-color: var(--error);
-      color: #ff8fa3;
-    }
-    .hop-item.success {
-      background: var(--success-bg);
-      border-color: var(--success);
-      color: #6ee7b7;
-    }
-    .hop-arrow { color: var(--text-muted); font-size: 14px; }
-
-    /* Timeline & Log Cards */
-    .timeline {
-      position: relative;
-      margin-top: 20px;
-      padding-left: 30px;
-    }
-    .timeline::before {
-      content: '';
-      position: absolute;
-      left: 12px;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: var(--border);
-    }
-    .timeline-card {
-      position: relative;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px 20px;
-      margin-bottom: 16px;
-      transition: all 0.2s;
-    }
-    .timeline-card:hover { border-color: var(--border-accent); }
-    .timeline-card.error {
-      border-left: 4px solid var(--error);
-      background: #160d13;
-    }
-    .timeline-card.warn {
-      border-left: 4px solid var(--warn);
-      background: #19140b;
-    }
-    .timeline-card.success {
-      border-left: 4px solid var(--success);
-    }
-    .card-marker {
-      position: absolute;
-      left: -26px;
-      top: 16px;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: var(--bg-dark);
-      border: 2px solid var(--primary);
       display: flex;
       align-items: center;
       justify-content: center;
+      border: 1px solid var(--border);
     }
-    .card-marker.error { border-color: var(--error); background: var(--error); }
-    .card-marker.success { border-color: var(--success); background: var(--success); }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-    .service-tag {
-      font-size: 13px;
+    .service-name {
       font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 6px;
-      background: #1e1b4b;
-      color: #c7d2fe;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      font-size: 15px;
+      color: #fff;
     }
-    .level-badge {
+    .service-category {
       font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .badge-group {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+    .status-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-mono);
+    }
+    .status-badge.Running {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .status-badge.Stopped {
+      background: rgba(148, 163, 184, 0.15);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+    .status-badge.Pending, .status-badge.Restarting {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .status-badge.Failed, .status-badge.CrashLoopBackOff {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .env-tag {
+      font-size: 10px;
       font-weight: 800;
       padding: 2px 6px;
       border-radius: 4px;
-      font-family: var(--font-mono);
+      letter-spacing: 0.05em;
     }
-    .level-badge.ERROR { background: var(--error); color: #fff; }
-    .level-badge.WARN { background: var(--warn); color: #000; }
-    .level-badge.SUCCESS { background: var(--success); color: #fff; }
-    .level-badge.INFO { background: #334155; color: #cbd5e1; }
+    .env-tag.DEV { background: #082f49; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .env-tag.PROD { background: #064e3b; color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .env-tag.GLOBAL, .env-tag.SHARED { background: #451a03; color: #fde047; border: 1px solid rgba(245, 158, 11, 0.3); }
 
-    .timestamp { font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); }
-    .log-body {
-      font-family: var(--font-mono);
-      font-size: 13px;
-      color: #f1f5f9;
-      line-height: 1.6;
-      white-space: pre-wrap;
-      word-break: break-all;
+    .service-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .service-domain-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       background: #090d16;
-      padding: 12px;
+      border: 1px solid var(--border);
       border-radius: 8px;
-      border: 1px solid #1a2234;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+    }
+    .domain-url {
+      color: var(--accent);
+      text-decoration: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 210px;
+    }
+    .domain-url:hover {
+      text-decoration: underline;
+    }
+    .btn-copy {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .btn-copy:hover { color: #fff; }
+
+    .resource-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      background: #090d16;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+    }
+    .resource-col {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .resource-label {
+      color: var(--text-dim);
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+    .resource-val {
+      color: #fff;
+      font-weight: 700;
     }
 
-    /* Service Log Streamer Tab */
-    .streamer-panel {
-      display: none;
-      background: var(--bg-card);
+    /* Action Buttons on Cards */
+    .card-actions {
+      display: flex;
+      gap: 6px;
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+    }
+    .btn-action {
+      flex: 1;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
       border: 1px solid var(--border);
-      border-radius: 16px;
+      background: #1e293b;
+      color: #f8fafc;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+    .btn-action:hover {
+      background: #334155;
+    }
+    .btn-action.restart:hover {
+      background: #312e81;
+      color: #a5b4fc;
+      border-color: #4f46e5;
+    }
+    .btn-action.stop:hover {
+      background: #7f1d1d;
+      color: #fca5a5;
+      border-color: #b91c1c;
+    }
+    .btn-action.start:hover {
+      background: #064e3b;
+      color: #86efac;
+      border-color: #059669;
+    }
+
+    /* Table Panels */
+    .panel-view {
+      display: none;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
       padding: 24px;
     }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .data-table th {
+      text-align: left;
+      padding: 12px 14px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+    }
+    .data-table td {
+      padding: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: #e2e8f0;
+    }
+    .data-table tr:hover td {
+      background: #131b2e;
+    }
+
+    /* Log Streamer Panel */
     .streamer-controls {
       display: flex;
       gap: 12px;
@@ -550,18 +557,17 @@
     .service-select {
       background: #090d16;
       border: 1px solid #2d3748;
-      border-radius: 10px;
-      padding: 10px 16px;
+      border-radius: 8px;
+      padding: 9px 14px;
       color: #fff;
-      font-size: 14px;
-      font-family: var(--font-main);
+      font-size: 13px;
       font-weight: 600;
       outline: none;
       min-width: 260px;
     }
     .log-terminal {
       background: #05070a;
-      border: 1px solid #1a2234;
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 16px;
       height: 600px;
@@ -571,93 +577,158 @@
       line-height: 1.6;
       color: #e2e8f0;
     }
-    .log-line {
-      padding: 2px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-    }
-    .log-line.err { color: #fca5a5; background: rgba(244, 63, 94, 0.08); }
-    .log-line.warn { color: #fde047; }
-    .log-line.succ { color: #86efac; }
 
-    /* TAB 3: Resource Metrics Grid Panel */
-    .metrics-panel {
-      display: none;
+    /* Flow Tracer */
+    .search-panel {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 24px;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 20px;
     }
-    .metrics-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      margin-top: 12px;
+    .search-input-group {
+      display: flex;
+      gap: 12px;
     }
-    .metrics-table th {
-      text-align: left;
-      padding: 12px 14px;
-      color: var(--text-muted);
-      border-bottom: 1px solid var(--border);
+    .search-input {
+      flex: 1;
+      background: #090d16;
+      border: 1px solid #2d3748;
+      border-radius: 8px;
+      padding: 12px 18px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+    .btn-primary {
+      background: var(--primary);
+      border: none;
+      color: #fff;
       font-weight: 700;
-      text-transform: uppercase;
-      font-size: 11px;
-      letter-spacing: 0.05em;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s ease;
     }
-    .metrics-table td {
-      padding: 14px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-      color: #e2e8f0;
+    .btn-primary:hover {
+      background: var(--primary-hover);
     }
-    .metrics-table tr:hover td {
-      background: #141b2d;
+    .quick-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      align-items: center;
+    }
+    .chip {
+      background: #1e293b;
+      border: 1px solid var(--border);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #cbd5e1;
+      cursor: pointer;
+    }
+    .chip:hover {
+      background: #334155;
+      color: #fff;
     }
 
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--text-muted);
-      font-size: 15px;
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
-    .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.6; }
+    .timeline-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .timeline-card.error { border-left: 4px solid var(--error); background: #1a0f14; }
+    .timeline-card.warn { border-left: 4px solid var(--warn); }
+    .timeline-card.success { border-left: 4px solid var(--success); }
+
+    /* Toast Notifications */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .toast {
+      background: #1e293b;
+      border: 1px solid var(--border);
+      padding: 12px 20px;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      animation: slideUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toast.success { border-left: 4px solid var(--success); }
+    .toast.error { border-left: 4px solid var(--error); }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
   </style>
 </head>
 <body>
 
-  <!-- Top Navigation -->
+  <!-- Navigation Bar -->
   <header class="navbar">
     <div class="nav-brand">
       <div class="brand-logo">⚡</div>
       <div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span class="brand-title">Smart Inventory Observability</span>
+        <div style="display: flex; align-items: center;">
+          <span class="brand-title">SmartSeth Observability</span>
           <div class="env-toggle">
-            <button class="env-btn active-dev" id="btn-env-dev" onclick="switchNamespace('dev')">DEV</button>
-            <button class="env-btn" id="btn-env-prod" onclick="switchNamespace('prod')">PROD</button>
+            <button class="env-btn active-dev" id="btn-env-dev" onclick="switchNamespace('dev')">DEV (.dev)</button>
+            <button class="env-btn" id="btn-env-prod" onclick="switchNamespace('prod')">PROD (.com)</button>
           </div>
         </div>
-        <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Microservices & Frontends Telemetry, Flow Tracer & Resource Hub</div>
       </div>
     </div>
 
     <div class="nav-tabs">
-      <div class="nav-tab active" id="tab-flow" onclick="switchTab('flow')">🔍 Request Flow Tracer</div>
-      <div class="nav-tab" id="tab-metrics" onclick="switchTab('metrics')">📊 Pod CPU & Memory</div>
-      <div class="nav-tab" id="tab-stream" onclick="switchTab('stream')">📜 Live Log Streamer</div>
+      <div class="nav-tab active" id="tab-topology" onclick="switchTab('topology')">🗺️ Topology</div>
+      <div class="nav-tab" id="tab-pods" onclick="switchTab('pods')">⚡ Pod Controls</div>
+      <div class="nav-tab" id="tab-events" onclick="switchTab('events')">📢 Activity Feed</div>
+      <div class="nav-tab" id="tab-stream" onclick="switchTab('stream')">📜 Live Logs</div>
+      <div class="nav-tab" id="tab-flow" onclick="switchTab('flow')">🔍 Flow Tracer</div>
     </div>
 
-    <div class="live-indicator">
-      <div class="pulse-dot"></div>
-      <span id="clusterStatusText">Dev Cluster Active</span>
+    <div class="nav-actions">
+      <div class="live-indicator">
+        <div class="pulse-dot"></div>
+        <span id="clusterStatusText">Dev Cluster Active</span>
+      </div>
+      <button class="btn-refresh" onclick="refreshAll()">🔄 Refresh</button>
     </div>
   </header>
 
-  <!-- Main Container -->
+  <!-- Main Content Area -->
   <main class="main-content">
 
-    <!-- Global Resource Metrics Stat Banner -->
-    <div class="metrics-banner" id="globalMetricsBanner">
+    <!-- Cluster Resource Metrics Banner -->
+    <div class="metrics-banner">
       <div class="metric-card">
-        <div class="metric-title">Cluster CPU Load</div>
+        <div class="metric-title">Cluster CPU Usage</div>
         <div class="metric-value-row">
           <div class="metric-value" id="val-total-cpu">--</div>
           <div class="metric-sub" id="val-cpu-pct">--%</div>
@@ -665,7 +736,7 @@
         <div class="metric-progress"><div class="metric-progress-bar" id="bar-cpu" style="width: 0%"></div></div>
       </div>
       <div class="metric-card">
-        <div class="metric-title">Server RAM Usage</div>
+        <div class="metric-title">Cluster Memory (RAM)</div>
         <div class="metric-value-row">
           <div class="metric-value" id="val-total-mem">--</div>
           <div class="metric-sub" id="val-mem-pct">--%</div>
@@ -673,7 +744,7 @@
         <div class="metric-progress"><div class="metric-progress-bar" id="bar-mem" style="width: 0%; background: linear-gradient(90deg, #38bdf8, #10b981)"></div></div>
       </div>
       <div class="metric-card">
-        <div class="metric-title">Running Pods</div>
+        <div class="metric-title">Pod Health Ratio</div>
         <div class="metric-value-row">
           <div class="metric-value" id="val-pods-running">--</div>
           <div class="metric-sub" id="val-pods-total">/ -- total</div>
@@ -681,7 +752,7 @@
         <div class="metric-progress"><div class="metric-progress-bar" id="bar-pods" style="width: 100%; background: #10b981"></div></div>
       </div>
       <div class="metric-card">
-        <div class="metric-title">Server Uptime & Load</div>
+        <div class="metric-title">Host Server Uptime</div>
         <div class="metric-value-row">
           <div class="metric-value" id="val-uptime">-- hrs</div>
           <div class="metric-sub" id="val-load-avg">Load: --</div>
@@ -690,102 +761,86 @@
       </div>
     </div>
 
-    <!-- Topology Architecture Map -->
-    <div class="topology-container">
+    <!-- TAB 1: Topology Grid View -->
+    <div id="view-topology" class="topology-container">
       <div class="section-header">
         <div class="section-title">
-          <span>🗺️ Microservices, Frontends & Infrastructure Topology</span>
+          <span>🗺️ Microservices, Frontends & Shared Infrastructure</span>
         </div>
-        <div id="topologySubtitle" style="font-size: 12px; color: var(--text-muted);">Live Topology for <b style="color:#38bdf8">DEV</b> (*.smartseth.dev)</div>
+        <div id="topologySubtitle" style="font-size: 12px; color: var(--text-muted);">
+          Viewing <b style="color:#38bdf8">DEV</b> Cluster (*.smartseth.dev)
+        </div>
       </div>
+
+      <div class="filter-bar">
+        <input type="text" id="topologyFilterInput" class="filter-input" placeholder="Filter services by name, port, or category..." oninput="filterTopology()" />
+      </div>
+
       <div class="topology-grid" id="topologyGrid">
         <!-- Dynamically populated -->
       </div>
     </div>
 
-    <!-- TAB 1: Request Flow Tracer -->
-    <div id="view-flow">
-      <div class="search-panel">
-        <div class="search-input-group">
-          <input type="text" id="queryInput" class="search-input" placeholder="Search by Order ID, User ID, Trace ID, Email, or error keyword..." value="login" />
-          <button class="btn-primary" onclick="executeTrace()">
-            <span>🔍</span>
-            <span>Trace Flow</span>
-          </button>
-        </div>
-
-        <div class="quick-chips">
-          <span class="chips-label">Quick Traces:</span>
-          <span class="chip" onclick="applyQuickFilter('login')">🔑 POST /api/auth/login</span>
-          <span class="chip" onclick="applyQuickFilter('Connected')">✅ Service DB Connections</span>
-          <span class="chip" onclick="applyQuickFilter('Error')">❌ Error & Failures</span>
-          <span class="chip" onclick="applyQuickFilter('Redis')">⚡ Redis Cache</span>
-          <span class="chip" onclick="applyQuickFilter('catalog')">📦 Catalog Microservice</span>
-          <span class="chip" onclick="applyQuickFilter('inventory')">🏭 Inventory Microservice</span>
-          <span class="chip" onclick="applyQuickFilter('payment')">💳 Payment Microservice</span>
-          <span class="chip" onclick="applyQuickFilter('admin')">🖥️ Admin Web</span>
-          <span class="chip" onclick="applyQuickFilter('generator')">⚙️ App Generator</span>
-        </div>
-
-        <!-- Hop Sequence Banner -->
-        <div id="flowBanner" class="flow-summary-banner">
-          <div id="flowBannerTitle" style="font-weight: 700; font-size: 15px; margin-bottom: 6px;"></div>
-          <div id="flowBannerDesc" style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;"></div>
-          <div class="hop-sequence" id="hopSequenceList"></div>
-        </div>
-      </div>
-
-      <!-- Flow Results Timeline -->
-      <div id="traceResults" class="timeline">
-        <div class="empty-state">
-          <div class="empty-icon">🔍</div>
-          <div>Enter an ID or keyword above to trace its end-to-end path across all microservices.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB 2: Pod CPU & Memory Resource Metrics -->
-    <div id="view-metrics" class="metrics-panel">
+    <!-- TAB 2: Pod Controls & Management Table -->
+    <div id="view-pods" class="panel-view">
       <div class="section-header">
         <div class="section-title">
-          <span>📊 Live Kubernetes Pod Resource Utilization</span>
+          <span>⚡ Live Kubernetes Pod Controller & Status</span>
         </div>
-        <button class="btn-primary" style="padding: 8px 16px; font-size: 13px;" onclick="loadMetrics()">🔄 Refresh Metrics</button>
+        <div style="font-size: 12px; color: var(--text-muted);">Instant rolling restarts, scaling, and container inspection</div>
       </div>
 
-      <table class="metrics-table">
+      <table class="data-table">
         <thead>
           <tr>
-            <th>Service / Component</th>
+            <th>Service</th>
             <th>Category</th>
-            <th>Pod Name</th>
             <th>Status</th>
-            <th>CPU Usage</th>
-            <th>Memory (RAM)</th>
+            <th>Pod Name</th>
+            <th>CPU</th>
+            <th>Memory</th>
             <th>Restarts</th>
-            <th>Host Port</th>
+            <th>Age</th>
+            <th>Actions</th>
           </tr>
         </thead>
-        <tbody id="metricsTableBody">
+        <tbody id="podsTableBody">
           <!-- Dynamically populated -->
         </tbody>
       </table>
     </div>
 
-    <!-- TAB 3: Live Pod Log Streamer -->
-    <div id="view-stream" class="streamer-panel">
+    <!-- TAB 3: Real-Time Kubernetes Activity & Events Feed -->
+    <div id="view-events" class="panel-view">
+      <div class="section-header">
+        <div class="section-title">
+          <span>📢 Real-Time Kubernetes Cluster Activity & Events</span>
+        </div>
+        <button class="btn-refresh" onclick="loadEvents()">🔄 Refresh Events</button>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Reason</th>
+            <th>Object</th>
+            <th>Message</th>
+            <th>Age</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody id="eventsTableBody">
+          <!-- Dynamically populated -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TAB 4: Live Log Streamer -->
+    <div id="view-stream" class="panel-view">
       <div class="streamer-controls">
-        <label style="font-size: 13px; font-weight: 700; color: var(--text-muted);">Select Component:</label>
+        <label style="font-size: 13px; font-weight: 700; color: var(--text-muted);">Select Service:</label>
         <select id="serviceSelect" class="service-select" onchange="fetchServiceLogs()">
-          <optgroup label="Frontends & UI">
-            <option value="ims-admin-web">🖥️ Admin Web (Port 3000)</option>
-            <option value="ims-superadmin-web">👑 Superadmin Web (Port 3002)</option>
-            <option value="ims-storefront-web">🛍️ Storefront Web (Port 3001)</option>
-          </optgroup>
-          <optgroup label="App Generator Suite">
-            <option value="ims-generator-backend">⚙️ App Generator Backend (Port 8005)</option>
-            <option value="ims-generator-frontend">📱 App Generator Frontend (Port 3005)</option>
-          </optgroup>
           <optgroup label="Core & Gateway">
             <option value="ims-api-gateway">🚪 API Gateway (Port 8080)</option>
             <option value="ims-main-backend">🏢 Main Backend (Port 8081)</option>
@@ -800,8 +855,21 @@
             <option value="ims-communication-service">📬 Communication Service (Port 4008)</option>
             <option value="ims-audit-service">🔍 Audit Service (Port 4009)</option>
           </optgroup>
+          <optgroup label="Frontends">
+            <option value="ims-admin-web">🖥️ Admin Portal (Port 3000)</option>
+            <option value="ims-superadmin-web">👑 Superadmin Web (Port 3002)</option>
+            <option value="ims-storefront-web">🛍️ Storefront Web (Port 3001)</option>
+          </optgroup>
+          <optgroup label="App Generator Suite">
+            <option value="ims-generator-backend">⚙️ Generator Backend (Port 8005)</option>
+            <option value="ims-generator-frontend">📱 Generator Frontend (Port 3005)</option>
+          </optgroup>
+          <optgroup label="Shared Infrastructure">
+            <option value="jenkins">🏗️ Jenkins CI/CD (Port 8080)</option>
+            <option value="web-log-viewer">📊 Tracer & Log Hub (Port 8888)</option>
+          </optgroup>
         </select>
-        <button class="btn-primary" style="padding: 10px 18px; font-size: 13px;" onclick="fetchServiceLogs()">🔄 Refresh Logs</button>
+        <button class="btn-refresh" onclick="fetchServiceLogs()">🔄 Refresh Stream</button>
       </div>
 
       <div class="log-terminal" id="logTerminal">
@@ -809,11 +877,53 @@
       </div>
     </div>
 
+    <!-- TAB 5: Request Flow Tracer -->
+    <div id="view-flow" class="panel-view">
+      <div class="search-panel">
+        <div class="search-input-group">
+          <input type="text" id="queryInput" class="search-input" placeholder="Search trace by Order ID, User ID, Trace ID, SKU, or keyword..." value="login" />
+          <button class="btn-primary" onclick="executeTrace()">
+            <span>🔍</span>
+            <span>Trace Flow</span>
+          </button>
+        </div>
+
+        <div class="quick-chips">
+          <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">Quick Traces:</span>
+          <span class="chip" onclick="applyQuickFilter('login')">🔑 POST /api/auth/login</span>
+          <span class="chip" onclick="applyQuickFilter('Connected')">✅ Service DB Connections</span>
+          <span class="chip" onclick="applyQuickFilter('Error')">❌ Error & Exceptions</span>
+          <span class="chip" onclick="applyQuickFilter('images')">🖼️ Variant Images Upload</span>
+          <span class="chip" onclick="applyQuickFilter('products')">📦 Catalog Service</span>
+          <span class="chip" onclick="applyQuickFilter('inventory')">🏭 Inventory Service</span>
+        </div>
+      </div>
+
+      <div id="traceResults" class="timeline">
+        <!-- Trace results populated here -->
+      </div>
+    </div>
+
   </main>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
 
   <script>
     var currentNamespace = 'dev';
     var servicesData = [];
+
+    function showToast(message, type) {
+      var container = document.getElementById('toastContainer');
+      var toast = document.createElement('div');
+      toast.className = 'toast ' + (type || 'success');
+      toast.innerHTML = (type === 'error' ? '❌ ' : '✅ ') + message;
+      container.appendChild(toast);
+      setTimeout(function() {
+        toast.style.opacity = '0';
+        setTimeout(function() { toast.remove(); }, 300);
+      }, 3500);
+    }
 
     function switchNamespace(ns) {
       currentNamespace = ns;
@@ -823,23 +933,33 @@
       
       var subtitle = document.getElementById('topologySubtitle');
       if (subtitle) {
-        subtitle.innerHTML = 'Live Topology for <b style="color:' + (ns === 'prod' ? '#10b981' : '#38bdf8') + '">' + ns.toUpperCase() + '</b> (*.smartseth.' + (ns === 'prod' ? 'com' : 'dev') + ')';
+        subtitle.innerHTML = 'Viewing <b style="color:' + (ns === 'prod' ? '#10b981' : '#38bdf8') + '">' + ns.toUpperCase() + '</b> Cluster (*.smartseth.' + (ns === 'prod' ? 'com' : 'dev') + ')';
       }
 
-      loadServices();
-      loadMetrics();
-      if (document.getElementById('view-flow').style.display !== 'none') {
-        executeTrace();
-      } else if (document.getElementById('view-stream').style.display !== 'none') {
-        fetchServiceLogs();
-      }
+      refreshAll();
+    }
+
+    function switchTab(tab) {
+      ['topology', 'pods', 'events', 'stream', 'flow'].forEach(function(t) {
+        var el = document.getElementById('tab-' + t);
+        var view = document.getElementById('view-' + t);
+        if (el) el.className = 'nav-tab ' + (t === tab ? 'active' : '');
+        if (view) view.style.display = (t === tab ? 'block' : 'none');
+      });
+
+      if (tab === 'stream') fetchServiceLogs();
+      if (tab === 'events') loadEvents();
+      if (tab === 'flow') executeTrace();
+    }
+
+    async function refreshAll() {
+      await Promise.all([loadMetrics(), loadServices(), loadEvents()]);
     }
 
     async function loadMetrics() {
       try {
         var res = await fetch('/api/metrics?ns=' + currentNamespace);
         var data = await res.json();
-        
         if (data.cluster) {
           document.getElementById('val-total-cpu').innerText = data.cluster.totalCpuUsage || '45m';
           document.getElementById('val-cpu-pct').innerText = (data.cluster.totalCpuPercent || 5) + '%';
@@ -857,11 +977,7 @@
             document.getElementById('val-load-avg').innerText = 'Load: ' + data.system.load1m;
           }
         }
-
-        renderMetricsTable();
-      } catch (e) {
-        console.error('Failed to load metrics', e);
-      }
+      } catch (e) {}
     }
 
     async function loadServices() {
@@ -869,184 +985,184 @@
         var res = await fetch('/api/services?ns=' + currentNamespace);
         servicesData = await res.json();
         renderTopology();
-        renderMetricsTable();
-      } catch (e) {
-        console.error('Failed to load services', e);
-      }
+        renderPodsTable();
+      } catch (e) {}
     }
 
-    function renderTopology(activeHopIds, failedHopId) {
-      if (!activeHopIds) activeHopIds = [];
-      var grid = document.getElementById('topologyGrid');
-      var html = '';
-      for (var i = 0; i < servicesData.length; i++) {
-        var s = servicesData[i];
-        var isFailed = failedHopId === s.id;
-        var isActive = activeHopIds.indexOf(s.id) !== -1;
-        var cardClass = isFailed ? 'failed-hop' : (isActive ? 'active-hop' : '');
-        var isRunning = s.k8s && (s.k8s.ready || s.k8s.status === 'Running');
-        var isShared = s.isShared || s.env === 'GLOBAL';
-        var envTag = isShared ? '<span style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; background:#451a03; color:#fde047; margin-left:auto;">SHARED</span>' : 
-                     (currentNamespace === 'prod' ? '<span style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; background:#064e3b; color:#6ee7b7; margin-left:auto;">PROD</span>' :
-                                                    '<span style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; background:#082f49; color:#38bdf8; margin-left:auto;">DEV</span>');
-
-        var domainDisplay = s.domain ? s.domain.replace(/^https?:\/\//, '') : '';
-        var domainLink = s.domain ? '<div style="margin-top:4px;"><a href="' + s.domain + '" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent); font-size:11px; text-decoration:none; font-family:var(--font-mono); display:inline-flex; align-items:center; gap:4px; background:rgba(99,102,241,0.12); padding:2px 6px; border-radius:4px;" title="Open ' + s.domain + '">🔗 ' + domainDisplay + ' ↗</a></div>' : '';
-        
-        html += '<div class="service-node ' + cardClass + '" data-service-id="' + s.id + '">' +
-          '<div>' +
-            '<div style="display:flex; align-items:center; width:100%; margin-bottom:4px;">' +
-              '<div class="node-icon">' + s.icon + '</div>' +
-              envTag +
-            '</div>' +
-            '<div class="node-name">' + s.name + '</div>' +
-            '<div class="node-port"><span class="node-status ' + (isRunning ? '' : 'err') + '"></span>Port ' + s.port + '</div>' +
-            domainLink +
-          '</div>' +
-          '<div class="node-usage-row" style="margin-top:8px;">' +
-            '<span>CPU: ' + (s.k8s.cpu || '< 5m') + '</span>' +
-            '<span>RAM: ' + (s.k8s.memory || '30Mi') + '</span>' +
-          '</div>' +
-        '</div>';
-      }
-      grid.innerHTML = html;
-
-      var nodes = grid.querySelectorAll('.service-node');
-      nodes.forEach(function(node) {
-        node.addEventListener('click', function() {
-          inspectService(this.getAttribute('data-service-id'));
-        });
-      });
-    }
-
-    function renderMetricsTable() {
-      var tbody = document.getElementById('metricsTableBody');
-      if (!tbody) return;
-      var html = '';
-      for (var i = 0; i < servicesData.length; i++) {
-        var s = servicesData[i];
-        var isRunning = s.k8s && (s.k8s.ready || s.k8s.status === 'Running');
-        var isShared = s.isShared || s.env === 'GLOBAL';
-        var envTag = isShared ? '<span style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; background:#451a03; color:#fde047;">SHARED</span>' : 
-                     (currentNamespace === 'prod' ? '<span style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; background:#064e3b; color:#6ee7b7;">PROD</span>' :
-                                                    '<span style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; background:#082f49; color:#38bdf8;">DEV</span>');
-        var domainDisplay = s.domain ? s.domain.replace(/^https?:\/\//, '') : '';
-        var domainHtml = s.domain ? '<a href="' + s.domain + '" target="_blank" style="color:var(--accent); text-decoration:none; font-family:var(--font-mono); font-size:12px;">' + domainDisplay + ' ↗</a>' : '<span style="color:var(--text-muted)">:' + s.port + '</span>';
-        html += '<tr>' +
-          '<td><b>' + s.icon + ' ' + s.name + '</b></td>' +
-          '<td><span style="color:var(--text-muted)">' + (s.category || 'Service') + '</span> ' + envTag + '</td>' +
-          '<td><code style="color:#93c5fd">' + (s.k8s.podName || s.id) + '</code></td>' +
-          '<td><span class="level-badge ' + (isRunning ? 'SUCCESS' : 'ERROR') + '">' + (isRunning ? 'Running' : (s.k8s.status || 'Pending')) + '</span></td>' +
-          '<td><b style="font-family:var(--font-mono); color:#a5b4fc">' + (s.k8s.cpu || '< 5m') + '</b></td>' +
-          '<td><b style="font-family:var(--font-mono); color:#6ee7b7">' + (s.k8s.memory || '30Mi') + '</b></td>' +
-          '<td>' + (s.k8s.restarts || 0) + '</td>' +
-          '<td>' + domainHtml + '</td>' +
-        '</tr>';
-      }
-      tbody.innerHTML = html;
-    }
-
-    function switchTab(tab) {
-      document.getElementById('tab-flow').className = 'nav-tab ' + (tab === 'flow' ? 'active' : '');
-      document.getElementById('tab-metrics').className = 'nav-tab ' + (tab === 'metrics' ? 'active' : '');
-      document.getElementById('tab-stream').className = 'nav-tab ' + (tab === 'stream' ? 'active' : '');
-
-      document.getElementById('view-flow').style.display = tab === 'flow' ? 'block' : 'none';
-      document.getElementById('view-metrics').style.display = tab === 'metrics' ? 'block' : 'none';
-      document.getElementById('view-stream').style.display = tab === 'stream' ? 'block' : 'none';
-
-      if (tab === 'stream') {
-        fetchServiceLogs();
-      } else if (tab === 'metrics') {
-        loadMetrics();
-      }
-    }
-
-    function inspectService(serviceId) {
-      switchTab('stream');
-      document.getElementById('serviceSelect').value = serviceId;
-      fetchServiceLogs();
-    }
-
-    function applyQuickFilter(val) {
-      document.getElementById('queryInput').value = val;
-      executeTrace();
-    }
-
-    async function executeTrace() {
-      var q = document.getElementById('queryInput').value.trim();
-      var resultsDiv = document.getElementById('traceResults');
-      var banner = document.getElementById('flowBanner');
-      if (!q) return;
-
-      resultsDiv.innerHTML = '<div class="empty-state"><div class="empty-icon">⚡</div><div>Tracing request hops across all ' + currentNamespace.toUpperCase() + ' pods in real-time...</div></div>';
-
+    async function loadEvents() {
       try {
-        var res = await fetch('/api/trace?q=' + encodeURIComponent(q) + '&ns=' + currentNamespace);
+        var res = await fetch('/api/events?ns=' + currentNamespace);
         var data = await res.json();
+        var tbody = document.getElementById('eventsTableBody');
+        if (!tbody) return;
 
-        if (!data || !data.flow || data.flow.length === 0) {
-          banner.className = 'flow-summary-banner';
-          renderTopology();
-          resultsDiv.innerHTML = '<div class="empty-state"><div class="empty-icon">❌</div><div>No trace entries found in <b>' + currentNamespace.toUpperCase() + '</b> for query: <b>' + escapeHtml(q) + '</b></div></div>';
+        if (!data.events || data.events.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:30px;">No recent events recorded in this namespace.</td></tr>';
           return;
         }
 
-        // Highlight Topology
-        var activeIds = (data.hops || []).map(function(h) { return h.id; });
-        renderTopology(activeIds, data.failedServiceId);
-
-        // Render Banner
-        banner.className = 'flow-summary-banner visible ' + (data.hasError ? 'failed' : 'success');
-        document.getElementById('flowBannerTitle').innerHTML = data.hasError ?
-          '❌ Request Execution FAILED at ' + escapeHtml(data.failedService) :
-          '✅ Request Flow Successfully Traced across ' + data.hops.length + ' Service(s)';
-        document.getElementById('flowBannerDesc').innerHTML = data.hasError ?
-          '<b>Root Cause:</b> ' + escapeHtml(data.failureReason || 'Error encountered in service processing') :
-          'Total matching events: ' + data.totalLogs + ' chronologically mapped.';
-
-        // Render Hops
-        var hopList = document.getElementById('hopSequenceList');
-        var hopsHtml = '';
-        for (var i = 0; i < data.hops.length; i++) {
-          var hop = data.hops[i];
-          var isFail = hop.status === 'FAILED';
-          hopsHtml += '<div class="hop-item ' + (isFail ? 'failed' : 'success') + '">' +
-            '<span>' + hop.icon + '</span>' +
-            '<span>' + hop.name + '</span>' +
-            '<span>' + (isFail ? '❌ FAILED' : '✅') + '</span>' +
-          '</div>';
-          if (i < data.hops.length - 1) {
-            hopsHtml += '<div class="hop-arrow">➔</div>';
-          }
-        }
-        hopList.innerHTML = hopsHtml;
-
-        // Render Log Cards
         var html = '';
-        for (var j = 0; j < data.flow.length; j++) {
-          var item = data.flow[j];
-          var cardClass = item.level === 'ERROR' ? 'error' : (item.level === 'WARN' ? 'warn' : (item.level === 'SUCCESS' ? 'success' : ''));
-          var markerClass = item.level === 'ERROR' ? 'error' : (item.level === 'SUCCESS' ? 'success' : '');
+        data.events.slice(0, 35).forEach(function(ev) {
+          var isWarn = ev.type === 'Warning';
+          html += '<tr>' +
+            '<td><span class="status-badge ' + (isWarn ? 'Failed' : 'Running') + '">' + ev.type + '</span></td>' +
+            '<td><b style="color:' + (isWarn ? '#f87171' : '#a5b4fc') + '">' + ev.reason + '</b></td>' +
+            '<td><code style="color:#93c5fd">' + ev.component + '</code></td>' +
+            '<td style="font-size:12px;">' + ev.message + '</td>' +
+            '<td><span style="color:var(--text-muted)">' + ev.age + '</span></td>' +
+            '<td>' + ev.count + '</td>' +
+          '</tr>';
+        });
+        tbody.innerHTML = html;
+      } catch (e) {}
+    }
 
-          html += '<div class="timeline-card ' + cardClass + '">' +
-            '<div class="card-marker ' + markerClass + '"></div>' +
-            '<div class="card-header">' +
-              '<div class="service-tag">' +
-                '<span>' + item.serviceIcon + '</span>' +
-                '<span>' + item.serviceName + '</span>' +
-                '<span class="level-badge ' + item.level + '">' + item.level + '</span>' +
-              '</div>' +
-              '<div class="timestamp">' + (item.time || '') + '</div>' +
-            '</div>' +
-            '<div class="log-body">' + escapeHtml(item.log) + '</div>' +
-          '</div>';
+    function renderTopology() {
+      var grid = document.getElementById('topologyGrid');
+      var filter = (document.getElementById('topologyFilterInput')?.value || '').toLowerCase();
+      var html = '';
+
+      servicesData.forEach(function(s) {
+        if (filter && !s.name.toLowerCase().includes(filter) && !s.id.toLowerCase().includes(filter) && !s.category.toLowerCase().includes(filter)) {
+          return;
         }
 
-        resultsDiv.innerHTML = html;
+        var isShared = s.isShared || s.env === 'GLOBAL';
+        var envTag = isShared ? '<span class="env-tag SHARED">SHARED</span>' : 
+                     (currentNamespace === 'prod' ? '<span class="env-tag PROD">PROD</span>' : '<span class="env-tag DEV">DEV</span>');
+
+        var status = s.k8s ? s.k8s.status : 'Stopped';
+        var isRunning = status === 'Running';
+        var domainDisplay = s.domain ? s.domain.replace(/^https?:\/\//, '') : '';
+        var replicas = s.deployment?.replicas !== undefined ? s.deployment.replicas : (isRunning ? 1 : 0);
+
+        html += '<div class="service-card">' +
+          '<div class="card-top">' +
+            '<div class="card-icon-title">' +
+              '<div class="service-icon">' + s.icon + '</div>' +
+              '<div>' +
+                '<div class="service-name">' + s.name + '</div>' +
+                '<div class="service-category">' + s.category + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="badge-group">' +
+              '<span class="status-badge ' + status + '">' + (isRunning ? '● Running' : (replicas === 0 ? '○ Stopped' : status)) + '</span>' +
+              envTag +
+            '</div>' +
+          '</div>' +
+
+          '<div class="service-desc">' + (s.desc || '') + '</div>' +
+
+          (s.domain ? 
+            '<div class="service-domain-row">' +
+              '<a href="' + s.domain + '" target="_blank" class="domain-url" title="' + s.domain + '">🔗 ' + domainDisplay + ' ↗</a>' +
+              '<button class="btn-copy" onclick="navigator.clipboard.writeText(\'' + s.domain + '\'); showToast(\'Copied ' + s.domain + '\');" title="Copy URL">📋</button>' +
+            '</div>' : ''
+          ) +
+
+          '<div class="resource-row">' +
+            '<div class="resource-col"><span class="resource-label">CPU</span><span class="resource-val">' + (s.k8s?.cpu || '< 5m') + '</span></div>' +
+            '<div class="resource-col"><span class="resource-label">RAM</span><span class="resource-val">' + (s.k8s?.memory || '24Mi') + '</span></div>' +
+            '<div class="resource-col"><span class="resource-label">Restarts</span><span class="resource-val">' + (s.k8s?.restarts || 0) + '</span></div>' +
+          '</div>' +
+
+          '<div class="card-actions">' +
+            '<button class="btn-action restart" onclick="restartService(\'' + s.id + '\')">🔄 Restart</button>' +
+            (replicas > 0 ? 
+              '<button class="btn-action stop" onclick="scaleService(\'' + s.id + '\', 0)">⏹️ Stop</button>' :
+              '<button class="btn-action start" onclick="scaleService(\'' + s.id + '\', 1)">▶️ Start</button>'
+            ) +
+            '<button class="btn-action" onclick="inspectServiceLogs(\'' + s.id + '\')">📜 Logs</button>' +
+          '</div>' +
+        '</div>';
+      });
+
+      grid.innerHTML = html;
+    }
+
+    function renderPodsTable() {
+      var tbody = document.getElementById('podsTableBody');
+      if (!tbody) return;
+      var html = '';
+
+      servicesData.forEach(function(s) {
+        var status = s.k8s ? s.k8s.status : 'Stopped';
+        var isRunning = status === 'Running';
+        var replicas = s.deployment?.replicas !== undefined ? s.deployment.replicas : (isRunning ? 1 : 0);
+
+        html += '<tr>' +
+          '<td><b>' + s.icon + ' ' + s.name + '</b></td>' +
+          '<td><span style="color:var(--text-muted)">' + s.category + '</span></td>' +
+          '<td><span class="status-badge ' + status + '">' + (isRunning ? 'Running' : (replicas === 0 ? 'Stopped' : status)) + '</span></td>' +
+          '<td><code style="color:#93c5fd">' + (s.k8s?.podName || s.id) + '</code></td>' +
+          '<td><b style="font-family:var(--font-mono); color:#a5b4fc">' + (s.k8s?.cpu || '< 5m') + '</b></td>' +
+          '<td><b style="font-family:var(--font-mono); color:#6ee7b7">' + (s.k8s?.memory || '24Mi') + '</b></td>' +
+          '<td>' + (s.k8s?.restarts || 0) + '</td>' +
+          '<td><span style="color:var(--text-muted)">' + (s.k8s?.age || '--') + '</span></td>' +
+          '<td>' +
+            '<div style="display:flex; gap:6px;">' +
+              '<button class="btn-action restart" style="padding:4px 8px; font-size:11px;" onclick="restartService(\'' + s.id + '\')">🔄</button>' +
+              (replicas > 0 ? 
+                '<button class="btn-action stop" style="padding:4px 8px; font-size:11px;" onclick="scaleService(\'' + s.id + '\', 0)">⏹️</button>' :
+                '<button class="btn-action start" style="padding:4px 8px; font-size:11px;" onclick="scaleService(\'' + s.id + '\', 1)">▶️</button>'
+              ) +
+              '<button class="btn-action" style="padding:4px 8px; font-size:11px;" onclick="inspectServiceLogs(\'' + s.id + '\')">📜</button>' +
+            '</div>' +
+          '</td>' +
+        '</tr>';
+      });
+
+      tbody.innerHTML = html;
+    }
+
+    function filterTopology() {
+      renderTopology();
+    }
+
+    async function restartService(serviceId) {
+      showToast('Triggering rolling restart for ' + serviceId + '...');
+      try {
+        var res = await fetch('/api/action/restart', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ service: serviceId, ns: currentNamespace })
+        });
+        var data = await res.json();
+        if (data.success) {
+          showToast(data.message, 'success');
+          setTimeout(refreshAll, 1500);
+        } else {
+          showToast(data.message || 'Restart failed', 'error');
+        }
       } catch (err) {
-        resultsDiv.innerHTML = '<div class="empty-state" style="color:var(--error)">Error querying trace API: ' + err.message + '</div>';
+        showToast(err.message, 'error');
       }
+    }
+
+    async function scaleService(serviceId, replicas) {
+      showToast((replicas === 0 ? 'Stopping ' : 'Starting ') + serviceId + '...');
+      try {
+        var res = await fetch('/api/action/scale', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ service: serviceId, ns: currentNamespace, replicas: replicas })
+        });
+        var data = await res.json();
+        if (data.success) {
+          showToast(data.message, 'success');
+          setTimeout(refreshAll, 1500);
+        } else {
+          showToast(data.message || 'Scale failed', 'error');
+        }
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function inspectServiceLogs(serviceId) {
+      switchTab('stream');
+      document.getElementById('serviceSelect').value = serviceId;
+      fetchServiceLogs();
     }
 
     async function fetchServiceLogs() {
@@ -1063,40 +1179,69 @@
           return;
         }
 
-        var linesHtml = '';
-        for (var i = 0; i < data.logs.length; i++) {
-          var line = data.logs[i];
-          var cls = 'log-line';
-          if (/error|fail|exception|fatal|500|401/i.test(line)) cls += ' err';
-          else if (/warn/i.test(line)) cls += ' warn';
-          else if (/success|connected|started/i.test(line)) cls += ' succ';
-          linesHtml += '<div class="' + cls + '">' + escapeHtml(line) + '</div>';
-        }
-
-        term.innerHTML = linesHtml;
+        var html = '';
+        data.logs.forEach(function(line) {
+          var isErr = /error|fail|exception|fatal|500/i.test(line);
+          var isWarn = /warn|warning|retry/i.test(line);
+          var isSucc = /success|connected|started|listening|200 OK/i.test(line);
+          var cls = isErr ? 'err' : (isWarn ? 'warn' : (isSucc ? 'succ' : ''));
+          html += '<div class="log-line ' + cls + '">' + escapeHtml(line) + '</div>';
+        });
+        term.innerHTML = html;
         term.scrollTop = term.scrollHeight;
-      } catch (e) {
-        term.innerHTML = '<div style="color:var(--error)">Failed to stream logs: ' + e.message + '</div>';
+      } catch (err) {
+        term.innerHTML = '<div style="color:var(--error)">Error fetching logs: ' + err.message + '</div>';
       }
     }
 
-    function escapeHtml(text) {
-      return (text || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    function applyQuickFilter(val) {
+      document.getElementById('queryInput').value = val;
+      executeTrace();
     }
 
-    document.getElementById('queryInput').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') executeTrace();
-    });
+    async function executeTrace() {
+      var q = document.getElementById('queryInput').value.trim();
+      var resultsDiv = document.getElementById('traceResults');
+      if (!q) return;
 
-    // Initial Load & Auto-polling every 10s
-    window.addEventListener('DOMContentLoaded', function() {
-      loadServices();
-      loadMetrics();
-      executeTrace();
-      setInterval(function() {
-        loadMetrics();
-      }, 10000);
-    });
+      resultsDiv.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:40px;">Tracing request hops across all ' + currentNamespace.toUpperCase() + ' pods...</div>';
+
+      try {
+        var res = await fetch('/api/trace?q=' + encodeURIComponent(q) + '&ns=' + currentNamespace);
+        var data = await res.json();
+
+        if (!data || !data.flow || data.flow.length === 0) {
+          resultsDiv.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:40px;">No trace events matched query "<b>' + escapeHtml(q) + '</b>" in ' + currentNamespace.toUpperCase() + '</div>';
+          return;
+        }
+
+        var html = '';
+        data.flow.forEach(function(item) {
+          var cardClass = item.level === 'ERROR' ? 'error' : (item.level === 'WARN' ? 'warn' : (item.level === 'SUCCESS' ? 'success' : ''));
+          html += '<div class="timeline-card ' + cardClass + '">' +
+            '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+              '<div style="display:flex; align-items:center; gap:8px; font-weight:700;">' +
+                '<span>' + item.serviceIcon + '</span>' +
+                '<span>' + item.serviceName + '</span>' +
+              '</div>' +
+              '<span style="font-size:11px; font-family:var(--font-mono); color:var(--text-muted);">' + item.time + '</span>' +
+            '</div>' +
+            '<div style="font-family:var(--font-mono); font-size:12px; background:#090d16; padding:10px; border-radius:6px; word-break:break-all;">' + escapeHtml(item.log) + '</div>' +
+          '</div>';
+        });
+        resultsDiv.innerHTML = html;
+      } catch (err) {
+        resultsDiv.innerHTML = '<div style="color:var(--error); text-align:center; padding:40px;">Trace failed: ' + err.message + '</div>';
+      }
+    }
+
+    function escapeHtml(str) {
+      return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // Auto load on boot & recurring poll
+    refreshAll();
+    setInterval(refreshAll, 10000);
   </script>
 </body>
 </html>

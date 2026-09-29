@@ -9,15 +9,15 @@ kind: ClusterRole
 metadata:
   name: trace-ui-cluster-role
 rules:
-- apiGroups: [""]
-  resources: ["pods", "pods/log", "services", "namespaces", "nodes"]
+- apiGroups: ["", "events.k8s.io"]
+  resources: ["pods", "pods/log", "services", "namespaces", "nodes", "events"]
   verbs: ["get", "list", "watch"]
 - apiGroups: ["metrics.k8s.io"]
   resources: ["pods", "nodes"]
   verbs: ["get", "list"]
 - apiGroups: ["apps"]
-  resources: ["deployments"]
-  verbs: ["get", "list", "watch"]
+  resources: ["deployments", "deployments/scale"]
+  verbs: ["get", "list", "watch", "update", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
