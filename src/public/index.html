@@ -696,7 +696,7 @@
         <div class="section-title">
           <span>🗺️ Microservices, Frontends & Infrastructure Topology</span>
         </div>
-        <div style="font-size: 12px; color: var(--text-muted);">Live Health, Host Ports & Real-Time CPU/Memory Badges</div>
+        <div id="topologySubtitle" style="font-size: 12px; color: var(--text-muted);">Live Topology for <b style="color:#38bdf8">DEV</b> (*.smartseth.dev)</div>
       </div>
       <div class="topology-grid" id="topologyGrid">
         <!-- Dynamically populated -->
@@ -819,10 +819,20 @@
       currentNamespace = ns;
       document.getElementById('btn-env-dev').className = 'env-btn ' + (ns === 'dev' ? 'active-dev' : '');
       document.getElementById('btn-env-prod').className = 'env-btn ' + (ns === 'prod' ? 'active-prod' : '');
-      document.getElementById('clusterStatusText').innerText = (ns === 'prod' ? 'Prod' : 'Dev') + ' Cluster Active';
+      document.getElementById('clusterStatusText').innerText = (ns === 'prod' ? 'Prod Cluster Active (.com)' : 'Dev Cluster Active (.dev)');
+      
+      var subtitle = document.getElementById('topologySubtitle');
+      if (subtitle) {
+        subtitle.innerHTML = 'Live Topology for <b style="color:' + (ns === 'prod' ? '#10b981' : '#38bdf8') + '">' + ns.toUpperCase() + '</b> (*.smartseth.' + (ns === 'prod' ? 'com' : 'dev') + ')';
+      }
+
       loadServices();
       loadMetrics();
-      executeTrace();
+      if (document.getElementById('view-flow').style.display !== 'none') {
+        executeTrace();
+      } else if (document.getElementById('view-stream').style.display !== 'none') {
+        fetchServiceLogs();
+      }
     }
 
     async function loadMetrics() {
@@ -875,15 +885,25 @@
         var isActive = activeHopIds.indexOf(s.id) !== -1;
         var cardClass = isFailed ? 'failed-hop' : (isActive ? 'active-hop' : '');
         var isRunning = s.k8s && (s.k8s.ready || s.k8s.status === 'Running');
-        var domainLink = s.domain ? '<a href="' + s.domain + '" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent); font-size:11px; text-decoration:none; margin-left:6px;" title="Open ' + s.domain + '">🔗 ' + s.domain.replace('http://', '') + '</a>' : '';
+        var isShared = s.isShared || s.env === 'GLOBAL';
+        var envTag = isShared ? '<span style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; background:#451a03; color:#fde047; margin-left:auto;">SHARED</span>' : 
+                     (currentNamespace === 'prod' ? '<span style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; background:#064e3b; color:#6ee7b7; margin-left:auto;">PROD</span>' :
+                                                    '<span style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; background:#082f49; color:#38bdf8; margin-left:auto;">DEV</span>');
+
+        var domainDisplay = s.domain ? s.domain.replace(/^https?:\/\//, '') : '';
+        var domainLink = s.domain ? '<div style="margin-top:4px;"><a href="' + s.domain + '" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent); font-size:11px; text-decoration:none; font-family:var(--font-mono); display:inline-flex; align-items:center; gap:4px; background:rgba(99,102,241,0.12); padding:2px 6px; border-radius:4px;" title="Open ' + s.domain + '">🔗 ' + domainDisplay + ' ↗</a></div>' : '';
         
         html += '<div class="service-node ' + cardClass + '" data-service-id="' + s.id + '">' +
           '<div>' +
-            '<div class="node-icon">' + s.icon + '</div>' +
+            '<div style="display:flex; align-items:center; width:100%; margin-bottom:4px;">' +
+              '<div class="node-icon">' + s.icon + '</div>' +
+              envTag +
+            '</div>' +
             '<div class="node-name">' + s.name + '</div>' +
-            '<div class="node-port"><span class="node-status ' + (isRunning ? '' : 'err') + '"></span>:' + s.port + domainLink + '</div>' +
+            '<div class="node-port"><span class="node-status ' + (isRunning ? '' : 'err') + '"></span>Port ' + s.port + '</div>' +
+            domainLink +
           '</div>' +
-          '<div class="node-usage-row">' +
+          '<div class="node-usage-row" style="margin-top:8px;">' +
             '<span>CPU: ' + (s.k8s.cpu || '< 5m') + '</span>' +
             '<span>RAM: ' + (s.k8s.memory || '30Mi') + '</span>' +
           '</div>' +
@@ -906,10 +926,15 @@
       for (var i = 0; i < servicesData.length; i++) {
         var s = servicesData[i];
         var isRunning = s.k8s && (s.k8s.ready || s.k8s.status === 'Running');
-        var domainHtml = s.domain ? '<a href="' + s.domain + '" target="_blank" style="color:var(--accent); text-decoration:none; font-family:var(--font-mono); font-size:12px;">' + s.domain.replace('http://', '') + ' ↗</a>' : '<span style="color:var(--text-muted)">:' + s.port + '</span>';
+        var isShared = s.isShared || s.env === 'GLOBAL';
+        var envTag = isShared ? '<span style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; background:#451a03; color:#fde047;">SHARED</span>' : 
+                     (currentNamespace === 'prod' ? '<span style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; background:#064e3b; color:#6ee7b7;">PROD</span>' :
+                                                    '<span style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; background:#082f49; color:#38bdf8;">DEV</span>');
+        var domainDisplay = s.domain ? s.domain.replace(/^https?:\/\//, '') : '';
+        var domainHtml = s.domain ? '<a href="' + s.domain + '" target="_blank" style="color:var(--accent); text-decoration:none; font-family:var(--font-mono); font-size:12px;">' + domainDisplay + ' ↗</a>' : '<span style="color:var(--text-muted)">:' + s.port + '</span>';
         html += '<tr>' +
           '<td><b>' + s.icon + ' ' + s.name + '</b></td>' +
-          '<td><span style="color:var(--text-muted)">' + (s.category || 'Service') + '</span></td>' +
+          '<td><span style="color:var(--text-muted)">' + (s.category || 'Service') + '</span> ' + envTag + '</td>' +
           '<td><code style="color:#93c5fd">' + (s.k8s.podName || s.id) + '</code></td>' +
           '<td><span class="level-badge ' + (isRunning ? 'SUCCESS' : 'ERROR') + '">' + (isRunning ? 'Running' : (s.k8s.status || 'Pending')) + '</span></td>' +
           '<td><b style="font-family:var(--font-mono); color:#a5b4fc">' + (s.k8s.cpu || '< 5m') + '</b></td>' +
