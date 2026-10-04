@@ -131,6 +131,12 @@
     .env-btn.active-prod {
       background: linear-gradient(135deg, #059669, #047857); color: #fff; box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4);
     }
+    .env-btn.active-shared {
+      background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #fff; box-shadow: 0 2px 10px rgba(139, 92, 246, 0.4);
+    }
+    .env-btn.active-personal {
+      background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; box-shadow: 0 2px 10px rgba(245, 158, 11, 0.4);
+    }
 
     .nav-tabs {
       display: flex; gap: 4px; background: var(--bg-input); padding: 3px;
@@ -449,6 +455,8 @@
       <div class="env-toggle">
         <button class="env-btn active-dev" id="btn-env-dev" onclick="switchNamespace('dev')">DEV (.dev)</button>
         <button class="env-btn" id="btn-env-prod" onclick="switchNamespace('prod')">PROD (.com)</button>
+        <button class="env-btn" id="btn-env-shared" onclick="switchNamespace('shared')">SHARED</button>
+        <button class="env-btn" id="btn-env-personal" onclick="switchNamespace('personal')">PERSONAL</button>
       </div>
     </div>
 
@@ -900,13 +908,18 @@
 
     function switchNamespace(ns) {
       currentNamespace = ns;
-      document.getElementById('btn-env-dev').className = 'env-btn ' + (ns === 'dev' ? 'active-dev' : '');
-      document.getElementById('btn-env-prod').className = 'env-btn ' + (ns === 'prod' ? 'active-prod' : '');
-      document.getElementById('clusterStatusText').innerText = (ns === 'prod' ? 'Prod Active (.com)' : 'Dev Active (.dev)');
+      ['dev', 'prod', 'shared', 'personal'].forEach(function(n) {
+        var btn = document.getElementById('btn-env-' + n);
+        if (btn) btn.className = 'env-btn ' + (ns === n ? 'active-' + n : '');
+      });
+
+      var statusMap = { dev: 'Dev Active (.dev)', prod: 'Prod Active (.com)', shared: 'Shared Active', personal: 'Personal Active' };
+      document.getElementById('clusterStatusText').innerText = statusMap[ns] || (ns.toUpperCase() + ' Active');
       
       var subtitle = document.getElementById('topologySubtitle');
       if (subtitle) {
-        subtitle.innerHTML = 'Viewing <b style="color:' + (ns === 'prod' ? '#10b981' : '#0ea5e9') + '">' + ns.toUpperCase() + '</b> Cluster (*.smartseth.' + (ns === 'prod' ? 'com' : 'dev') + ')';
+        var colors = { dev: '#0ea5e9', prod: '#10b981', shared: '#8b5cf6', personal: '#f59e0b' };
+        subtitle.innerHTML = 'Viewing <b style="color:' + (colors[ns] || '#0ea5e9') + '">' + ns.toUpperCase() + '</b> Namespace';
       }
 
       refreshAll();

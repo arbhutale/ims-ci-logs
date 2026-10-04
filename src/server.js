@@ -7,29 +7,41 @@ const app = express();
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
+function sanitizeNs(ns) {
+  const allowed = ['dev', 'prod', 'shared', 'personal'];
+  return allowed.includes(ns) ? ns : 'dev';
+}
+
 function getServicesConfig(ns) {
   const isProd = ns === 'prod';
   const baseDomain = isProd ? 'smartseth.com' : 'smartseth.dev';
   const protocol = 'https://';
 
+  if (ns === 'shared') {
+    return [
+      { id: 'jenkins', name: 'Jenkins CI/CD', icon: '🏗️', port: 8080, domain: `${protocol}ci.${baseDomain}`, type: 'cicd', category: 'Shared Infrastructure', isShared: true, env: 'SHARED', desc: 'Automated CI/CD Build & Deployment Engine' },
+      { id: 'web-log-viewer', name: 'Tracer & CI Logs Hub', icon: '📊', port: 8888, domain: `${protocol}logs.${baseDomain}`, type: 'observability', category: 'Shared Infrastructure', isShared: true, env: 'SHARED', desc: 'Central Observability & Pod Manager' },
+      { id: 'ims-redis', name: 'Redis Cache', icon: '⚡', port: 6379, domain: `redis://ims-redis.shared.svc.cluster.local:6379`, type: 'infrastructure', category: 'Shared Infrastructure', isShared: true, env: 'SHARED', desc: 'In-Memory Caching & Event Queues' }
+    ];
+  }
+
+  const envTag = (ns || 'dev').toUpperCase();
+
   return [
-    { id: 'ims-api-gateway', name: 'API Gateway', icon: '🚪', port: 8080, domain: `${protocol}api.${baseDomain}`, type: 'gateway', category: 'Core & Gateway', env: isProd ? 'PROD' : 'DEV', desc: 'Reverse Proxy & Central Routing' },
-    { id: 'ims-main-backend', name: 'Main Backend', icon: '🏢', port: 8081, domain: `${protocol}api.${baseDomain}`, type: 'core', category: 'Core & Gateway', env: isProd ? 'PROD' : 'DEV', desc: 'Core Auth, Settings, Users & Purchases' },
-    { id: 'ims-catalog-service', name: 'Catalog Service', icon: '📦', port: 4002, domain: `${protocol}api.${baseDomain}/api/products`, type: 'microservice', category: 'Microservices', env: isProd ? 'PROD' : 'DEV', desc: 'Products, Categories, Brands & Catalogs' },
-    { id: 'ims-inventory-service', name: 'Inventory Service', icon: '🏭', port: 4003, domain: `${protocol}api.${baseDomain}/api/inventory`, type: 'microservice', category: 'Microservices', env: isProd ? 'PROD' : 'DEV', desc: 'Stock, Variants, Images & Warehouses' },
-    { id: 'ims-sales-service', name: 'Sales & Orders', icon: '🧾', port: 4004, domain: `${protocol}api.${baseDomain}/api/sales-invoices`, type: 'microservice', category: 'Microservices', env: isProd ? 'PROD' : 'DEV', desc: 'Invoices, Quotations, Storefront Orders' },
-    { id: 'ims-payment-service', name: 'Payment Service', icon: '💳', port: 4006, domain: `${protocol}api.${baseDomain}/api/razorpay`, type: 'microservice', category: 'Microservices', env: isProd ? 'PROD' : 'DEV', desc: 'Razorpay, PayU & Payment Ledgers' },
-    { id: 'ims-logistics-service', name: 'Logistics Service', icon: '🚚', port: 4007, domain: `${protocol}api.${baseDomain}/api/logistics`, type: 'microservice', category: 'Microservices', env: isProd ? 'PROD' : 'DEV', desc: 'Shipments, Tracking & Couriers' },
-    { id: 'ims-communication-service', name: 'Communication Service', icon: '📬', port: 4008, domain: `${protocol}api.${baseDomain}/api/communication`, type: 'microservice', category: 'Microservices', env: isProd ? 'PROD' : 'DEV', desc: 'Mail, SMS & Notifications' },
-    { id: 'ims-audit-service', name: 'Audit & Telemetry', icon: '🔍', port: 4009, domain: `${protocol}api.${baseDomain}/api/audit`, type: 'microservice', category: 'Microservices', env: isProd ? 'PROD' : 'DEV', desc: 'Audit Logs & Telemetry Events' },
-    { id: 'ims-redis', name: 'Redis Cache', icon: '⚡', port: 6379, domain: `redis://${isProd ? 'prod' : 'dev'}:6379`, type: 'infrastructure', category: 'Core & Gateway', env: isProd ? 'PROD' : 'DEV', desc: 'In-Memory Caching & Event Queues' },
-    { id: 'ims-admin-web', name: 'Admin Portal', icon: '🖥️', port: 3000, domain: `${protocol}ims.${baseDomain}`, type: 'frontend', category: 'Frontends & UI', env: isProd ? 'PROD' : 'DEV', desc: 'Merchant & Inventory Management Next.js Web App' },
-    { id: 'ims-superadmin-web', name: 'Superadmin Web', icon: '👑', port: 3002, domain: `${protocol}superadmin.${baseDomain}`, type: 'frontend', category: 'Frontends & UI', env: isProd ? 'PROD' : 'DEV', desc: 'Platform Superadmin SaaS Control Panel' },
-    { id: 'ims-storefront-web', name: 'Storefront Web', icon: '🛍️', port: 3001, domain: isProd ? `${protocol}wififashion.${baseDomain}` : `${protocol}shiromanimart.${baseDomain}`, type: 'frontend', category: 'Frontends & UI', env: isProd ? 'PROD' : 'DEV', desc: 'Customer E-Commerce Web Storefront' },
-    { id: 'ims-generator-backend', name: 'App Gen Backend', icon: '⚙️', port: 8005, domain: `${protocol}generator.${baseDomain}/api`, type: 'generator', category: 'App Generator', env: isProd ? 'PROD' : 'DEV', desc: 'White-label Mobile App Generator Backend' },
-    { id: 'ims-generator-frontend', name: 'App Gen Frontend', icon: '📱', port: 3005, domain: `${protocol}generator.${baseDomain}`, type: 'generator', category: 'App Generator', env: isProd ? 'PROD' : 'DEV', desc: 'White-label Mobile App Generator UI' },
-    { id: 'jenkins', name: 'Jenkins CI/CD', icon: '🏗️', port: 8080, domain: `${protocol}ci.${baseDomain}`, type: 'cicd', category: 'Shared Infrastructure', isShared: true, env: 'GLOBAL', desc: 'Automated CI/CD Build & Deployment Engine' },
-    { id: 'web-log-viewer', name: 'Tracer & CI Logs Hub', icon: '📊', port: 8888, domain: `${protocol}logs.${baseDomain}`, type: 'observability', category: 'Shared Infrastructure', isShared: true, env: 'GLOBAL', desc: 'Central Observability & Pod Manager' }
+    { id: 'ims-api-gateway', name: 'API Gateway', icon: '🚪', port: 8080, domain: `${protocol}api.${baseDomain}`, type: 'gateway', category: 'Core & Gateway', env: envTag, desc: 'Reverse Proxy & Central Routing' },
+    { id: 'ims-main-backend', name: 'Main Backend', icon: '🏢', port: 8081, domain: `${protocol}api.${baseDomain}`, type: 'core', category: 'Core & Gateway', env: envTag, desc: 'Core Auth, Settings, Users & Purchases' },
+    { id: 'ims-catalog-service', name: 'Catalog Service', icon: '📦', port: 4002, domain: `${protocol}api.${baseDomain}/api/products`, type: 'microservice', category: 'Microservices', env: envTag, desc: 'Products, Categories, Brands & Catalogs' },
+    { id: 'ims-inventory-service', name: 'Inventory Service', icon: '🏭', port: 4003, domain: `${protocol}api.${baseDomain}/api/inventory`, type: 'microservice', category: 'Microservices', env: envTag, desc: 'Stock, Variants, Images & Warehouses' },
+    { id: 'ims-sales-service', name: 'Sales & Orders', icon: '🧾', port: 4004, domain: `${protocol}api.${baseDomain}/api/sales-invoices`, type: 'microservice', category: 'Microservices', env: envTag, desc: 'Invoices, Quotations, Storefront Orders' },
+    { id: 'ims-payment-service', name: 'Payment Service', icon: '💳', port: 4006, domain: `${protocol}api.${baseDomain}/api/razorpay`, type: 'microservice', category: 'Microservices', env: envTag, desc: 'Razorpay, PayU & Payment Ledgers' },
+    { id: 'ims-logistics-service', name: 'Logistics Service', icon: '🚚', port: 4007, domain: `${protocol}api.${baseDomain}/api/logistics`, type: 'microservice', category: 'Microservices', env: envTag, desc: 'Shipments, Tracking & Couriers' },
+    { id: 'ims-communication-service', name: 'Communication Service', icon: '📬', port: 4008, domain: `${protocol}api.${baseDomain}/api/communication`, type: 'microservice', category: 'Microservices', env: envTag, desc: 'Mail, SMS & Notifications' },
+    { id: 'ims-audit-service', name: 'Audit & Telemetry', icon: '🔍', port: 4009, domain: `${protocol}api.${baseDomain}/api/audit`, type: 'microservice', category: 'Microservices', env: envTag, desc: 'Audit Logs & Telemetry Events' },
+    { id: 'ims-admin-web', name: 'Admin Portal', icon: '🖥️', port: 3000, domain: `${protocol}ims.${baseDomain}`, type: 'frontend', category: 'Frontends & UI', env: envTag, desc: 'Merchant & Inventory Management Next.js Web App' },
+    { id: 'ims-superadmin-web', name: 'Superadmin Web', icon: '👑', port: 3002, domain: `${protocol}superadmin.${baseDomain}`, type: 'frontend', category: 'Frontends & UI', env: envTag, desc: 'Platform Superadmin SaaS Control Panel' },
+    { id: 'ims-storefront-web', name: 'Storefront Web', icon: '🛍️', port: 3001, domain: isProd ? `${protocol}wififashion.${baseDomain}` : `${protocol}shiromanimart.${baseDomain}`, type: 'frontend', category: 'Frontends & UI', env: envTag, desc: 'Customer E-Commerce Web Storefront' },
+    { id: 'ims-generator-backend', name: 'App Gen Backend', icon: '⚙️', port: 8005, domain: `${protocol}generator.${baseDomain}/api`, type: 'generator', category: 'App Generator', env: envTag, desc: 'White-label Mobile App Generator Backend' },
+    { id: 'ims-generator-frontend', name: 'App Gen Frontend', icon: '📱', port: 3005, domain: `${protocol}generator.${baseDomain}`, type: 'generator', category: 'App Generator', env: envTag, desc: 'White-label Mobile App Generator UI' }
   ];
 }
 
@@ -67,10 +79,10 @@ function getAge(startTime) {
 
 // 1. Get all services with live pod status, replicas, CPU/Memory metrics
 app.get('/api/services', (req, res) => {
-  const ns = req.query.ns === 'prod' ? 'prod' : 'dev';
+  const ns = sanitizeNs(req.query.ns);
   const services = getServicesConfig(ns);
   
-  exec(`kubectl get pods -n ${ns} -o json 2>/dev/null; echo "---SPLIT---"; kubectl get pods -n dev -o json 2>/dev/null; echo "---SPLIT---"; kubectl get deployments -n ${ns} -o json 2>/dev/null; echo "---SPLIT---"; kubectl get deployments -n dev -o json 2>/dev/null`, (err, stdout) => {
+  exec(`kubectl get pods -n ${ns} -o json 2>/dev/null; echo "---SPLIT---"; kubectl get deployments -n ${ns} -o json 2>/dev/null`, (err, stdout) => {
     const podStatusMap = {};
     const deploymentStatusMap = {};
 
@@ -177,7 +189,7 @@ app.get('/api/services', (req, res) => {
 
 // 2. Global Cluster & System Metrics API
 app.get('/api/metrics', (req, res) => {
-  const ns = req.query.ns === 'prod' ? 'prod' : 'dev';
+  const ns = sanitizeNs(req.query.ns);
 
   exec(`kubectl top pods -n ${ns} --no-headers 2>/dev/null`, (err, topOut) => {
     exec(`kubectl get pods -n ${ns} -o json 2>/dev/null`, (err2, podsOut) => {
@@ -255,7 +267,7 @@ app.get('/api/metrics', (req, res) => {
 
 // 3. Kubernetes Events & Cluster Activity API
 app.get('/api/events', (req, res) => {
-  const ns = req.query.ns === 'prod' ? 'prod' : 'dev';
+  const ns = sanitizeNs(req.query.ns);
   const cmd = `kubectl get events -n ${ns} --sort-by='.metadata.creationTimestamp' -o json 2>/dev/null`;
 
   exec(cmd, { maxBuffer: 1024 * 1024 * 5 }, (err, stdout) => {
@@ -284,7 +296,7 @@ app.get('/api/events', (req, res) => {
 // 4. Pod / Deployment Actions (Restart, Scale Start/Stop)
 app.post('/api/action/restart', (req, res) => {
   const { service, ns } = req.body;
-  const targetNs = (service === 'web-log-viewer' || service === 'jenkins') ? 'dev' : (ns === 'prod' ? 'prod' : 'dev');
+  const targetNs = (service === 'web-log-viewer' || service === 'jenkins' || service === 'ims-redis') ? 'shared' : sanitizeNs(ns);
   const sanitizedService = (service || '').replace(/[^a-zA-Z0-9_\-]/g, '');
 
   if (!sanitizedService) {
@@ -302,7 +314,7 @@ app.post('/api/action/restart', (req, res) => {
 
 app.post('/api/action/scale', (req, res) => {
   const { service, ns, replicas } = req.body;
-  const targetNs = (service === 'web-log-viewer' || service === 'jenkins') ? 'dev' : (ns === 'prod' ? 'prod' : 'dev');
+  const targetNs = (service === 'web-log-viewer' || service === 'jenkins' || service === 'ims-redis') ? 'shared' : sanitizeNs(ns);
   const sanitizedService = (service || '').replace(/[^a-zA-Z0-9_\-]/g, '');
   const count = parseInt(replicas, 10) === 0 ? 0 : 1;
 
@@ -321,12 +333,12 @@ app.post('/api/action/scale', (req, res) => {
 
 // 5. Log Streamer Endpoint
 app.get('/api/logs', (req, res) => {
-  const ns = req.query.ns === 'prod' ? 'prod' : 'dev';
+  const ns = sanitizeNs(req.query.ns);
   const service = req.query.service || 'ims-api-gateway';
   const tail = parseInt(req.query.tail, 10) || 150;
   const sanitizedService = service.replace(/[^a-zA-Z0-9_\-]/g, '');
 
-  const targetNs = (sanitizedService === 'web-log-viewer' || sanitizedService === 'jenkins') ? 'dev' : ns;
+  const targetNs = (sanitizedService === 'web-log-viewer' || sanitizedService === 'jenkins' || sanitizedService === 'ims-redis') ? 'shared' : ns;
 
   const cmd = `kubectl logs -n ${targetNs} -l app=${sanitizedService} --tail=${tail} --timestamps=true`;
   exec(cmd, { maxBuffer: 1024 * 1024 * 5 }, (err, stdout, stderr) => {
