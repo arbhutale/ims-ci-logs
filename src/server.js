@@ -377,17 +377,26 @@ app.post('/api/action/scale', (req, res) => {
 app.get('/api/logs', (req, res) => {
   const ns = sanitizeNs(req.query.ns);
   const service = req.query.service || 'ims-api-gateway';
+  const pod = req.query.pod ? req.query.pod.replace(/[^a-zA-Z0-9_\-]/g, '') : '';
   const tail = parseInt(req.query.tail, 10) || 150;
   const sanitizedService = service.replace(/[^a-zA-Z0-9_\-]/g, '');
 
-  const targetNs = (sanitizedService === 'web-log-viewer' || sanitizedService === 'jenkins' || sanitizedService === 'ims-redis') ? 'shared' : ns;
+  let primaryNs = ns;
+  if (['web-log-viewer', 'jenkins', 'ims-redis'].includes(sanitizedService)) {
+    primaryNs = 'shared';
+  } else if (sanitizedService === 'portfolio') {
+    primaryNs = 'personal';
+  }
 
-  const cmd = `kubectl logs -n ${targetNs} -l app=${sanitizedService} --tail=${tail} --timestamps=true`;
+  const cmd = pod
+    ? `kubectl logs -n ${primaryNs} ${pod} --tail=${tail} --timestamps=true 2>/dev/null || kubectl logs -n dev ${pod} --tail=${tail} --timestamps=true 2>/dev/null || kubectl logs -n personal ${pod} --tail=${tail} --timestamps=true`
+    : `kubectl logs -n ${primaryNs} -l app=${sanitizedService} --tail=${tail} --timestamps=true 2>/dev/null || kubectl logs -n dev -l app=${sanitizedService} --tail=${tail} --timestamps=true 2>/dev/null || kubectl logs -n personal -l app=${sanitizedService} --tail=${tail} --timestamps=true 2>/dev/null || kubectl logs -n shared -l app=${sanitizedService} --tail=${tail} --timestamps=true`;
+
   exec(cmd, { maxBuffer: 1024 * 1024 * 5 }, (err, stdout, stderr) => {
-    if (err && !stdout) {
-      return res.json({ logs: [`No active logs in ${targetNs} namespace for ${sanitizedService}`] });
-    }
     const lines = (stdout || '').split('\n').filter(Boolean);
+    if (lines.length === 0) {
+      return res.json({ logs: [`No active logs recorded for ${sanitizedService}`] });
+    }
     res.json({ logs: lines });
   });
 });
