@@ -19,7 +19,7 @@ pipeline {
         stage('Checkout SCM') {
             steps {
                 echo "===> Checking out branch ${params.BRANCH} for target environment: ${env.NAMESPACE}"
-                git branch: "${params.BRANCH}", credentialsId: 'github-ssh', url: 'git@github.com:arbhutale/ims-ci-logs.git'
+                git branch: "${params.BRANCH}", credentialsId: 'github-token', url: 'https://github.com/arbhutale/ims-ci-logs.git'
             }
         }
 
