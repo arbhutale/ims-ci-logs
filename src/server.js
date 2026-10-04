@@ -6,6 +6,7 @@ const app = express();
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
+app.use('/.well-known/acme-challenge', express.static('/var/www/certbot/.well-known/acme-challenge'));
 
 function sanitizeNs(ns) {
   const allowed = ['dev', 'prod', 'shared', 'personal'];
@@ -709,7 +710,7 @@ app.post('/api/ssl/issue', (req, res) => {
     echo "=== Syncing Generated Certificate to Kubernetes Secrets ===";
     CERT_DIR="/etc/letsencrypt/live/${cleanCertName}";
     if [ -f "$CERT_DIR/fullchain.pem" ] && [ -f "$CERT_DIR/privkey.pem" ]; then
-      for ns in dev prod; do
+      for ns in dev prod personal; do
         echo "Applying to namespace [$ns] -> Secret: [${cleanSecretName}]...";
         kubectl create secret tls "${cleanSecretName}" \\
           --cert="$CERT_DIR/fullchain.pem" \\
@@ -760,7 +761,7 @@ app.post('/api/ssl/sync-secrets', (req, res) => {
     for d in smartseth.dev smartseth.com; do
       if [ -f "/etc/letsencrypt/live/$d/fullchain.pem" ] && [ -f "/etc/letsencrypt/live/$d/privkey.pem" ]; then
         sec_name="tls-certs-\${d##*.}";
-        echo "Updating $sec_name in dev and prod namespaces...";
+        echo "Updating $sec_name in dev, prod, and personal namespaces...";
         kubectl create secret tls "$sec_name" \
           --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
           --key="/etc/letsencrypt/live/$d/privkey.pem" \
@@ -769,6 +770,10 @@ app.post('/api/ssl/sync-secrets', (req, res) => {
           --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
           --key="/etc/letsencrypt/live/$d/privkey.pem" \
           --dry-run=client -o yaml | kubectl apply -n prod -f -;
+        kubectl create secret tls "$sec_name" \
+          --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
+          --key="/etc/letsencrypt/live/$d/privkey.pem" \
+          --dry-run=client -o yaml | kubectl apply -n personal -f -;
 
         if [ "$d" = "smartseth.dev" ]; then
           kubectl create secret tls ims-tls-dev-secret \
