@@ -89,18 +89,32 @@ app.get('/api/services', (req, res) => {
     if (stdout) {
       const sections = stdout.split('---SPLIT---');
       
-      // Parse Pods
-      [sections[0], sections[1]].forEach(sec => {
-        try {
-          if (!sec || !sec.trim()) return;
-          const k8sData = JSON.parse(sec.trim());
+      // Parse Pods (sections[0])
+      try {
+        if (sections[0] && sections[0].trim()) {
+          const k8sData = JSON.parse(sections[0].trim());
           if (k8sData.items) {
             k8sData.items.forEach(pod => {
               const appLabel = pod.metadata.labels?.app;
               if (appLabel) {
                 const podName = pod.metadata.name;
                 const ready = pod.status.containerStatuses?.every(c => c.ready) ?? false;
-                const phase = pod.status.phase;
+                const phase = pod.status.phase || 'Pending';
+
+                let detailedStatus = phase;
+                if (pod.metadata.deletionTimestamp) {
+                  detailedStatus = 'Terminating';
+                } else if (pod.status.containerStatuses && pod.status.containerStatuses.length > 0) {
+                  const cs = pod.status.containerStatuses[0];
+                  if (cs.state?.waiting?.reason) {
+                    detailedStatus = cs.state.waiting.reason;
+                  } else if (cs.state?.terminated?.reason) {
+                    detailedStatus = cs.state.terminated.reason;
+                  } else if (cs.ready) {
+                    detailedStatus = 'Running';
+                  }
+                }
+
                 const restarts = pod.status.containerStatuses?.[0]?.restartCount || 0;
                 const ip = pod.status.podIP || '--';
                 const node = pod.spec.nodeName || 'k3s-node';
@@ -108,7 +122,8 @@ app.get('/api/services', (req, res) => {
 
                 podStatusMap[appLabel] = {
                   podName,
-                  status: phase,
+                  status: detailedStatus,
+                  phase,
                   ready,
                   namespace: pod.metadata.namespace,
                   restarts,
@@ -122,14 +137,13 @@ app.get('/api/services', (req, res) => {
               }
             });
           }
-        } catch (e) {}
-      });
+        }
+      } catch (e) {}
 
-      // Parse Deployments
-      [sections[2], sections[3]].forEach(sec => {
-        try {
-          if (!sec || !sec.trim()) return;
-          const depData = JSON.parse(sec.trim());
+      // Parse Deployments (sections[1])
+      try {
+        if (sections[1] && sections[1].trim()) {
+          const depData = JSON.parse(sections[1].trim());
           if (depData.items) {
             depData.items.forEach(dep => {
               const name = dep.metadata.name;
@@ -141,8 +155,8 @@ app.get('/api/services', (req, res) => {
               };
             });
           }
-        } catch (e) {}
-      });
+        }
+      } catch (e) {}
     }
 
     getPodMetrics(ns, (metricsMap) => {
