@@ -25,6 +25,12 @@ function getServicesConfig(ns) {
     ];
   }
 
+  if (ns === 'personal') {
+    return [
+      { id: 'portfolio', name: 'Portfolio Web', icon: '🎨', port: 3000, domain: `https://ar.bhutale.in`, type: 'frontend', category: 'Personal Projects', env: 'PERSONAL', desc: 'Personal Portfolio Web App & Showcase (*.ar.bhutale.in)' }
+    ];
+  }
+
   const envTag = (ns || 'dev').toUpperCase();
 
   return [
@@ -194,6 +200,28 @@ app.get('/api/services', (req, res) => {
             memory: '0Mi'
           }
         };
+      });
+
+      const mappedIds = new Set(services.map(s => s.id));
+      Object.keys(podStatusMap).forEach(appKey => {
+        if (!mappedIds.has(appKey)) {
+          const podInfo = podStatusMap[appKey];
+          const depInfo = deploymentStatusMap[appKey] || { replicas: 1, readyReplicas: podInfo.ready ? 1 : 0 };
+          const calculatedStatus = podInfo.ready ? 'Running' : (podInfo.status || 'Pending');
+          enriched.push({
+            id: appKey,
+            name: appKey.split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+            icon: '⚡',
+            port: 3000,
+            domain: ns === 'personal' ? `https://ar.bhutale.in` : `https://${appKey}.smartseth.dev`,
+            type: 'custom',
+            category: ns === 'personal' ? 'Personal Projects' : 'Deployed Microservices',
+            env: ns.toUpperCase(),
+            desc: `Active deployed service in ${ns} namespace`,
+            deployment: depInfo,
+            k8s: podInfo
+          });
+        }
       });
 
       res.json(enriched);
