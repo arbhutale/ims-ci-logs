@@ -4,7 +4,11 @@ const path = require('path');
 const os = require('os');
 const app = express();
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders: (res) => {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+  }
+}));
 app.use(express.json());
 app.use('/.well-known/acme-challenge', express.static('/var/www/certbot/.well-known/acme-challenge'));
 
@@ -739,9 +743,13 @@ app.post('/api/ssl/issue', (req, res) => {
 app.post('/api/ssl/sync-secrets', (req, res) => {
   const syncScript = `
     echo "=== Syncing Let's Encrypt certificates to Kubernetes secrets ===";
-    for d in smartseth.dev smartseth.com; do
+    for d in smartseth.dev smartseth.com ar.bhutale.in; do
       if [ -f "/etc/letsencrypt/live/$d/fullchain.pem" ] && [ -f "/etc/letsencrypt/live/$d/privkey.pem" ]; then
-        sec_name="tls-certs-\${d##*.}";
+        if [ "$d" = "ar.bhutale.in" ]; then
+          sec_name="tls-certs-bhutale";
+        else
+          sec_name="tls-certs-\${d##*.}";
+        fi
         echo "Updating $sec_name in dev, prod, and personal namespaces...";
         kubectl create secret tls "$sec_name" \
           --cert="/etc/letsencrypt/live/$d/fullchain.pem" \

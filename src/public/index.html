@@ -801,6 +801,16 @@
               <span class="preset-chip" onclick="addPresetSubdomain('superadmin')">superadmin.</span>
             </div>
           </div>
+
+          <div>
+            <span style="font-size: 11px; color: var(--text-muted); font-weight: 700;">👤 Personal & Portfolio Subdomains:</span>
+            <div class="preset-chips" style="margin-top: 4px;">
+              <span class="preset-chip" onclick="addPresetSubdomain('ar')">ar.</span>
+              <span class="preset-chip" onclick="addPresetSubdomain('portfolio')">portfolio.</span>
+              <span class="preset-chip" onclick="addPresetSubdomain('dev')">dev.</span>
+              <span class="preset-chip" onclick="addPresetSubdomain('blog')">blog.</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1006,29 +1016,35 @@
     function openSslIssueModal(targetCert) {
       var select = document.getElementById('sslTargetCertGroup');
       if (targetCert) {
-        if (targetCert === 'smartseth.dev' || targetCert === 'smartseth.com') {
-          select.value = targetCert;
+        if (targetCert === 'smartseth.dev' || targetCert === 'smartseth.com' || targetCert === 'ar.bhutale.in' || targetCert.includes('bhutale')) {
+          select.value = targetCert.includes('bhutale') ? 'ar.bhutale.in' : targetCert;
         } else {
           select.value = 'custom';
           document.getElementById('sslCustomCertName').value = targetCert;
         }
       } else {
-        select.value = currentNamespace === 'prod' ? 'smartseth.com' : 'smartseth.dev';
+        select.value = currentNamespace === 'personal' ? 'ar.bhutale.in' : (currentNamespace === 'prod' ? 'smartseth.com' : 'smartseth.dev');
       }
       onCertGroupChanged();
 
       // If opening for existing cert, pre-populate existing domains
       selectedSslDomains.clear();
-      var found = sslCertificates.find(function(c) { return c.name === select.value; });
-      if (found && found.domains) {
+      var targetName = select.value === 'custom' ? document.getElementById('sslCustomCertName').value : select.value;
+      var found = sslCertificates.find(function(c) { return c.name === targetName; });
+      if (found && found.domains && found.domains.length > 0) {
         found.domains.forEach(function(d) { selectedSslDomains.add(d); });
       } else {
         var base = select.value === 'custom' ? (document.getElementById('sslCustomCertName').value || 'smartseth.dev') : select.value;
         selectedSslDomains.add(base);
-        selectedSslDomains.add('www.' + base);
-        selectedSslDomains.add('api.' + base);
-        selectedSslDomains.add('ims.' + base);
-        selectedSslDomains.add('generator.' + base);
+        if (base.includes('bhutale')) {
+          selectedSslDomains.add('portfolio.' + base);
+          selectedSslDomains.add('dev.' + base);
+        } else {
+          selectedSslDomains.add('www.' + base);
+          selectedSslDomains.add('api.' + base);
+          selectedSslDomains.add('ims.' + base);
+          selectedSslDomains.add('generator.' + base);
+        }
       }
 
       renderSslDomainTags();
