@@ -92,6 +92,7 @@
     }
 
     /* Top Navigation Bar */
+    /* Header Navbar Layout */
     .navbar {
       background: var(--nav-bg);
       backdrop-filter: blur(16px);
@@ -102,28 +103,45 @@
       z-index: 100;
       padding: 10px 20px;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
+      flex-direction: column;
+      gap: 10px;
       transition: var(--transition);
     }
-    .nav-left { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
-    .brand-box { display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; }
+    .nav-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      width: 100%;
+    }
+    .nav-sub-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .brand-box { display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; flex-shrink: 0; }
     .brand-logo {
       width: 36px; height: 36px; border-radius: 10px;
       background: linear-gradient(135deg, #6366f1, #0ea5e9);
       display: flex; align-items: center; justify-content: center; font-size: 18px;
       box-shadow: 0 4px 14px var(--glow-color); flex-shrink: 0;
     }
-    .brand-title { font-size: 15px; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; }
+    .brand-text { display: flex; flex-direction: column; }
+    .brand-title { font-size: 15px; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; line-height: 1.2; }
+    .brand-subtitle { font-weight: 500; color: var(--text-muted); font-size: 11.5px; white-space: nowrap; }
 
     .env-toggle {
       display: inline-flex; background: var(--bg-input);
       border: 1px solid var(--border); border-radius: 30px; padding: 3px; gap: 2px;
+      flex-shrink: 0; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
     }
+    .env-toggle::-webkit-scrollbar { display: none; }
     .env-btn {
-      background: transparent; border: none; padding: 4px 12px; border-radius: 20px;
+      background: transparent; border: none; padding: 5px 12px; border-radius: 20px;
       font-size: 11px; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: var(--transition);
+      white-space: nowrap; flex-shrink: 0;
     }
     .env-btn.active-dev {
       background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff; box-shadow: 0 2px 10px rgba(14, 165, 233, 0.4);
@@ -141,12 +159,13 @@
     .nav-tabs {
       display: flex; gap: 4px; background: var(--bg-input); padding: 3px;
       border-radius: 12px; border: 1px solid var(--border); overflow-x: auto; scrollbar-width: none;
+      flex-shrink: 0; -webkit-overflow-scrolling: touch; flex: 1;
     }
     .nav-tabs::-webkit-scrollbar { display: none; }
     .nav-tab {
       padding: 7px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 600;
       color: var(--text-muted); cursor: pointer; transition: var(--transition);
-      display: flex; align-items: center; gap: 6px; white-space: nowrap; user-select: none;
+      display: flex; align-items: center; gap: 6px; white-space: nowrap; user-select: none; flex-shrink: 0;
     }
     .nav-tab:hover { color: var(--text-main); background: rgba(99, 102, 241, 0.08); }
     .nav-tab.active { background: var(--bg-card); color: var(--text-main); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
@@ -155,7 +174,7 @@
     .live-badge {
       display: flex; align-items: center; gap: 6px; background: var(--success-subtle);
       border: 1px solid rgba(16, 185, 129, 0.3); padding: 5px 10px; border-radius: 20px;
-      font-size: 11px; font-weight: 700; color: var(--success); white-space: nowrap;
+      font-size: 11px; font-weight: 700; color: var(--success); white-space: nowrap; flex-shrink: 0;
     }
     .pulse-dot {
       width: 7px; height: 7px; border-radius: 50%; background: var(--success);
@@ -166,7 +185,7 @@
     .btn-icon {
       background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main);
       width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center;
-      justify-content: center; cursor: pointer; font-size: 15px; transition: var(--transition);
+      justify-content: center; cursor: pointer; font-size: 15px; transition: var(--transition); flex-shrink: 0;
     }
     .btn-icon:hover { background: var(--bg-elevated); border-color: var(--border-strong); transform: translateY(-1px); }
 
@@ -519,19 +538,26 @@
     }
 
     /* Mobile Responsive Breakpoints */
-    @media (max-width: 900px) {
-      .navbar { flex-wrap: wrap; padding: 10px 14px; gap: 10px; }
-      .nav-left { width: 100%; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
-      .env-toggle { width: 100%; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding: 4px; }
-      .nav-tabs { order: 3; width: 100%; justify-content: flex-start; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
-      .main-container { padding: 14px; gap: 14px; }
-      .metrics-banner { grid-template-columns: repeat(2, 1fr); }
+    @media (min-width: 1100px) {
+      .navbar { flex-direction: row; align-items: center; justify-content: space-between; padding: 10px 24px; }
+      .nav-top-row { width: auto; justify-content: flex-start; }
+      .nav-sub-row { width: auto; flex: 1; justify-content: space-between; }
+    }
+    @media (max-width: 1099px) {
+      .navbar { padding: 10px 14px; gap: 8px; }
+      .nav-sub-row { flex-direction: column; align-items: stretch; gap: 6px; }
+      .env-toggle { width: 100%; justify-content: flex-start; overflow-x: auto; }
+      .nav-tabs { width: 100%; justify-content: flex-start; overflow-x: auto; }
     }
     @media (max-width: 640px) {
-      .navbar { padding: 10px; gap: 8px; }
-      .brand-title span:last-child { display: none; }
-      .env-btn { padding: 6px 12px; font-size: 11px; white-space: nowrap; }
-      .nav-tab { padding: 8px 12px; font-size: 12px; }
+      .navbar { padding: 8px 10px; gap: 6px; }
+      .brand-subtitle { display: none; }
+      .brand-logo { width: 32px; height: 32px; font-size: 16px; }
+      .brand-title { font-size: 13.5px; }
+      .live-badge { font-size: 10px; padding: 4px 8px; }
+      .btn-icon { width: 32px; height: 32px; font-size: 14px; border-radius: 8px; }
+      .env-btn { padding: 5px 10px; font-size: 10.5px; white-space: nowrap; }
+      .nav-tab { padding: 6px 10px; font-size: 11.5px; }
       .metrics-banner { grid-template-columns: 1fr; }
       .metric-card { padding: 14px; }
       .topology-grid { grid-template-columns: 1fr; }
@@ -555,48 +581,49 @@
 
   <!-- Navigation Bar -->
   <header class="navbar">
-    <div class="nav-left">
+    <div class="nav-top-row">
       <div class="brand-box">
         <div class="brand-logo">⚡</div>
-        <div>
-          <div class="brand-title">
-            <span>SmartSeth</span>
-            <span style="font-weight: 400; color: var(--text-muted); font-size: 13px;">Observability & SSL</span>
-          </div>
+        <div class="brand-text">
+          <span class="brand-title">SmartSeth</span>
+          <span class="brand-subtitle">Observability & SSL</span>
         </div>
       </div>
 
+      <div class="nav-right">
+        <div class="live-badge">
+          <div class="pulse-dot"></div>
+          <span id="clusterStatusText">Dev Active</span>
+        </div>
+
+        <button class="btn-icon" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Light / Dark Mode">
+          <span id="themeIcon">🌙</span>
+        </button>
+
+        <button class="btn-icon" onclick="refreshAll()" title="Refresh Cluster Data">
+          <span>🔄</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Sub-Header Controls (Environment Selector & Nav Tabs) -->
+    <div class="nav-sub-row">
       <div class="env-toggle">
         <button class="env-btn active-dev" id="btn-env-dev" onclick="switchNamespace('dev')">DEV (.dev)</button>
         <button class="env-btn" id="btn-env-prod" onclick="switchNamespace('prod')">PROD (.com)</button>
         <button class="env-btn" id="btn-env-shared" onclick="switchNamespace('shared')">SHARED</button>
-        <button class="env-btn" id="btn-env-personal" onclick="switchNamespace('personal')">PERSONAL</button>
-      </div>
-    </div>
-
-    <!-- Navigation Tabs -->
-    <nav class="nav-tabs">
-      <div class="nav-tab active" id="tab-topology" onclick="switchTab('topology')">🗺️ Topology</div>
-      <div class="nav-tab" id="tab-pods" onclick="switchTab('pods')">⚡ Pod Controls</div>
-      <div class="nav-tab" id="tab-ssl" onclick="switchTab('ssl')">🔒 SSL Certificates</div>
-      <div class="nav-tab" id="tab-events" onclick="switchTab('events')">📢 Activity Feed</div>
-      <div class="nav-tab" id="tab-stream" onclick="switchTab('stream')">📜 Live Logs</div>
-      <div class="nav-tab" id="tab-flow" onclick="switchTab('flow')">🔍 Flow Tracer</div>
-    </nav>
-
-    <div class="nav-right">
-      <div class="live-badge">
-        <div class="pulse-dot"></div>
-        <span id="clusterStatusText">Dev Active</span>
+        <button class="env-btn" id="btn-env-personal" onclick="switchNamespace('personal')">PERSONAL (bhutale)</button>
       </div>
 
-      <button class="btn-icon" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Light / Dark Mode">
-        <span id="themeIcon">🌙</span>
-      </button>
-
-      <button class="btn-icon" onclick="refreshAll()" title="Refresh Cluster Data">
-        <span>🔄</span>
-      </button>
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs">
+        <div class="nav-tab active" id="tab-topology" onclick="switchTab('topology')">🗺️ Topology</div>
+        <div class="nav-tab" id="tab-pods" onclick="switchTab('pods')">⚡ Pods</div>
+        <div class="nav-tab" id="tab-ssl" onclick="switchTab('ssl')">🔒 SSL</div>
+        <div class="nav-tab" id="tab-events" onclick="switchTab('events')">📢 Activity</div>
+        <div class="nav-tab" id="tab-stream" onclick="switchTab('stream')">📜 Logs</div>
+        <div class="nav-tab" id="tab-flow" onclick="switchTab('flow')">🔍 Tracer</div>
+      </nav>
     </div>
   </header>
 
