@@ -488,8 +488,8 @@ app.get('/api/ssl/certificates', (req, res) => {
       fi
     done;
     echo "=== SECRETS ===";
-    for ns in dev prod; do
-      for sec in tls-certs-dev tls-certs-com ims-tls-dev-secret ims-tls-secret; do
+    for ns in dev prod personal; do
+      for sec in tls-certs-dev tls-certs-com tls-certs-bhutale ims-tls-dev-secret ims-tls-secret; do
         cert_b64=$(kubectl get secret "$sec" -n "$ns" -o jsonpath='{.data.tls\\.crt}' 2>/dev/null);
         if [ -n "$cert_b64" ]; then
           echo "SECRET:$ns/$sec";
@@ -610,39 +610,20 @@ app.post('/api/ssl/renew', (req, res) => {
     certbot renew ${domainArg} ${forceFlag} --non-interactive || certbot certificates;
     
     echo "=== 2. Syncing Renewed Certs into Kubernetes TLS Secrets ===";
-    for d in smartseth.dev smartseth.com; do
-      if [ -f "/etc/letsencrypt/live/$d/fullchain.pem" ] && [ -f "/etc/letsencrypt/live/$d/privkey.pem" ]; then
+    for dir in /etc/letsencrypt/live/*; do
+      if [ -d "$dir" ] && [ -f "$dir/fullchain.pem" ] && [ -f "$dir/privkey.pem" ]; then
+        d=$(basename "$dir");
         sec_name="tls-certs-\${d##*.}";
-        echo "Syncing $d -> Secret $sec_name in dev & prod namespaces...";
-        kubectl create secret tls "$sec_name" \
-          --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
-          --key="/etc/letsencrypt/live/$d/privkey.pem" \
-          --dry-run=client -o yaml | kubectl apply -n dev -f -;
-        kubectl create secret tls "$sec_name" \
-          --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
-          --key="/etc/letsencrypt/live/$d/privkey.pem" \
-          --dry-run=client -o yaml | kubectl apply -n prod -f -;
-          
-        # Sync to ims-tls-dev-secret / ims-tls-secret aliases
-        if [ "$d" = "smartseth.dev" ]; then
-          kubectl create secret tls ims-tls-dev-secret \
-            --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
-            --key="/etc/letsencrypt/live/$d/privkey.pem" \
-            --dry-run=client -o yaml | kubectl apply -n dev -f -;
-          kubectl create secret tls ims-tls-dev-secret \
-            --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
-            --key="/etc/letsencrypt/live/$d/privkey.pem" \
-            --dry-run=client -o yaml | kubectl apply -n prod -f -;
-        elif [ "$d" = "smartseth.com" ]; then
-          kubectl create secret tls ims-tls-secret \
-            --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
-            --key="/etc/letsencrypt/live/$d/privkey.pem" \
-            --dry-run=client -o yaml | kubectl apply -n dev -f -;
-          kubectl create secret tls ims-tls-secret \
-            --cert="/etc/letsencrypt/live/$d/fullchain.pem" \
-            --key="/etc/letsencrypt/live/$d/privkey.pem" \
-            --dry-run=client -o yaml | kubectl apply -n prod -f -;
+        if [ "$d" = "ar.bhutale.in" ]; then
+          sec_name="tls-certs-bhutale";
         fi
+        echo "Syncing $d -> Secret $sec_name across dev, prod, personal namespaces...";
+        for ns in dev prod personal; do
+          kubectl create secret tls "$sec_name" \
+            --cert="$dir/fullchain.pem" \
+            --key="$dir/privkey.pem" \
+            --dry-run=client -o yaml | kubectl apply -n "$ns" -f -;
+        done
       fi
     done;
     echo "=== 3. SSL Secrets Sync Complete ===";
