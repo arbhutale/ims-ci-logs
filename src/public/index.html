@@ -748,6 +748,7 @@
           <select id="sslTargetCertGroup" class="select-dropdown" onchange="onCertGroupChanged()">
             <option value="smartseth.dev">DEV Cluster (*.smartseth.dev -> Secret: tls-certs-dev)</option>
             <option value="smartseth.com">PROD Cluster (*.smartseth.com -> Secret: tls-certs-com)</option>
+            <option value="ar.bhutale.in">PERSONAL Portfolio (ar.bhutale.in -> Secret: tls-certs-bhutale)</option>
             <option value="custom">Custom Certificate Group...</option>
           </select>
         </div>
@@ -1192,8 +1193,12 @@
         var isExpiring = c.daysLeft < 20;
         var badgeClass = c.daysLeft <= 0 ? 'Expired' : (isExpiring ? 'ExpiringSoon' : 'Valid');
         var sanHtml = (c.domains || []).map(function(d) { return '<span class="san-tag">🔒 ' + d + '</span>'; }).join('');
-        var envLabel = c.name.includes('.com') ? 'PROD (*.smartseth.com)' : 'DEV (*.smartseth.dev)';
-        var envColor = c.name.includes('.com') ? '#10b981' : '#0ea5e9';
+        var isBhutale = c.name.includes('bhutale');
+        var isCom = c.name.includes('.com');
+        var envLabel = isBhutale ? 'PERSONAL (ar.bhutale.in)' : (isCom ? 'PROD (*.smartseth.com)' : 'DEV (*.smartseth.dev)');
+        var envColor = isBhutale ? '#a855f7' : (isCom ? '#10b981' : '#0ea5e9');
+        var secretName = isBhutale ? 'tls-certs-bhutale' : (isCom ? 'tls-certs-com' : 'tls-certs-dev');
+        var nsTargets = isBhutale ? '<code>dev</code>, <code>prod</code> & <code>personal</code>' : '<code>dev</code> & <code>prod</code>';
 
         html += '<div class="ssl-card">' +
           '<div style="display: flex; justify-content: space-between; align-items: flex-start;">' +
@@ -1207,7 +1212,7 @@
 
           '<div style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #10b981; background: rgba(16, 185, 129, 0.08); padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid rgba(16, 185, 129, 0.2);">' +
             '<span>⚡</span>' +
-            '<span><b>Auto-Synced to K8s Secrets:</b> <code>tls-certs-' + (c.name.includes('.com') ? 'com' : 'dev') + '</code> in <code>dev</code> & <code>prod</code></span>' +
+            '<span><b>Auto-Synced to K8s Secrets:</b> <code>' + secretName + '</code> in ' + nsTargets + '</span>' +
           '</div>' +
 
           '<div>' +
