@@ -1113,12 +1113,69 @@
       }, 3500);
     }
 
+    // Touch Swipe Gesture for Environments (DEV <-> PROD <-> SHARED <-> PERSONAL)
+    var touchStartX = 0;
+    var touchStartY = 0;
+    var touchEndX = 0;
+    var touchEndY = 0;
+    var envList = ['dev', 'prod', 'shared', 'personal'];
+
+    function initSwipeGestures() {
+      var navEl = document.querySelector('.navbar');
+      if (!navEl) return;
+
+      navEl.addEventListener('touchstart', function(e) {
+        if (!e.changedTouches || !e.changedTouches.length) return;
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+      }, { passive: true });
+
+      navEl.addEventListener('touchend', function(e) {
+        if (!e.changedTouches || !e.changedTouches.length) return;
+        touchEndX = e.changedTouches[0].screenX;
+        touchEndY = e.changedTouches[0].screenY;
+        handleSwipeGesture();
+      }, { passive: true });
+    }
+
+    function handleSwipeGesture() {
+      var deltaX = touchEndX - touchStartX;
+      var deltaY = touchEndY - touchStartY;
+      var threshold = 35;
+
+      if (Math.abs(deltaX) > threshold && Math.abs(deltaX) > Math.abs(deltaY) * 1.2) {
+        var currentIndex = envList.indexOf(currentNamespace);
+        if (currentIndex === -1) currentIndex = 0;
+
+        if (deltaX < 0) {
+          // Swipe Left -> Next Environment
+          if (currentIndex < envList.length - 1) {
+            var nextEnv = envList[currentIndex + 1];
+            switchNamespace(nextEnv);
+            showToast('Swiped to ' + nextEnv.toUpperCase() + ' Environment 🚀');
+          }
+        } else {
+          // Swipe Right -> Previous Environment
+          if (currentIndex > 0) {
+            var prevEnv = envList[currentIndex - 1];
+            switchNamespace(prevEnv);
+            showToast('Swiped to ' + prevEnv.toUpperCase() + ' Environment 🚀');
+          }
+        }
+      }
+    }
+
     function switchNamespace(ns) {
       currentNamespace = ns;
       ['dev', 'prod', 'shared', 'personal'].forEach(function(n) {
         var btn = document.getElementById('btn-env-' + n);
         if (btn) btn.className = 'env-btn ' + (ns === n ? 'active-' + n : '');
       });
+
+      var activeBtn = document.getElementById('btn-env-' + ns);
+      if (activeBtn && activeBtn.scrollIntoView) {
+        activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
 
       var statusMap = { dev: 'Dev Active (.dev)', prod: 'Prod Active (.com)', shared: 'Shared Active', personal: 'Personal Active' };
       document.getElementById('clusterStatusText').innerText = statusMap[ns] || (ns.toUpperCase() + ' Active');
@@ -1783,6 +1840,7 @@
     }
 
     initTheme();
+    initSwipeGestures();
     refreshAll();
     setInterval(refreshAll, 10000);
   </script>
