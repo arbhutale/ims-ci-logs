@@ -419,21 +419,135 @@
     .toast.error { border-left: 4px solid var(--error); }
     @keyframes toastIn { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
+    /* App Footer Styling */
+    .app-footer {
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+      padding: 24px 20px;
+      color: var(--text-muted);
+      font-size: 12.5px;
+      transition: var(--transition);
+    }
+    .footer-container {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .footer-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      color: var(--text-main);
+      font-size: 14px;
+    }
+    .footer-logo {
+      color: #6366f1;
+    }
+    .footer-desc {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      max-width: 450px;
+      line-height: 1.4;
+    }
+    .footer-middle {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .footer-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--success-subtle);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--success);
+    }
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 6px var(--success);
+    }
+    .footer-links {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .footer-link {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 11.5px;
+      transition: var(--transition);
+    }
+    .footer-link:hover {
+      color: var(--primary);
+      text-decoration: underline;
+    }
+    .footer-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      text-align: right;
+    }
+    .footer-copyright {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+    .footer-version {
+      font-size: 10.5px;
+      font-family: var(--font-mono);
+      color: var(--text-dim);
+    }
+
+    /* Mobile Responsive Breakpoints */
     @media (max-width: 900px) {
       .navbar { flex-wrap: wrap; padding: 10px 14px; gap: 10px; }
-      .nav-tabs { order: 3; width: 100%; justify-content: flex-start; }
+      .nav-left { width: 100%; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+      .env-toggle { width: 100%; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding: 4px; }
+      .nav-tabs { order: 3; width: 100%; justify-content: flex-start; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
       .main-container { padding: 14px; gap: 14px; }
       .metrics-banner { grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 640px) {
+      .navbar { padding: 10px; gap: 8px; }
+      .brand-title span:last-child { display: none; }
+      .env-btn { padding: 6px 12px; font-size: 11px; white-space: nowrap; }
+      .nav-tab { padding: 8px 12px; font-size: 12px; }
       .metrics-banner { grid-template-columns: 1fr; }
+      .metric-card { padding: 14px; }
       .topology-grid { grid-template-columns: 1fr; }
       .ssl-grid { grid-template-columns: 1fr; }
       .desktop-table { display: none !important; }
       .mobile-pods-list { display: flex !important; }
-      .log-terminal { height: 460px; }
-      .streamer-toolbar { flex-direction: column; align-items: stretch; }
+      .log-terminal { height: 420px; font-size: 11px; padding: 12px; }
+      .streamer-toolbar { flex-direction: column; align-items: stretch; gap: 8px; padding: 10px; }
       .toolbar-left, .toolbar-right { width: 100%; justify-content: space-between; }
+      .search-input { min-width: 100%; width: 100%; }
+      .form-row { flex-direction: column; align-items: stretch; gap: 10px; }
+      .modal-box { padding: 16px; max-width: 94vw; max-height: 88vh; border-radius: var(--radius-md); }
+      .preset-chip { padding: 6px 12px; font-size: 12px; }
+      .btn-action { padding: 8px 12px; min-height: 38px; font-size: 12px; }
+      .footer-container { flex-direction: column; align-items: flex-start; gap: 14px; }
+      .footer-middle, .footer-right { align-items: flex-start; text-align: left; }
     }
   </style>
 </head>
@@ -729,6 +843,34 @@
     </section>
 
   </main>
+
+  <!-- App Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <div class="footer-brand">
+          <span class="footer-logo">⚡</span>
+          <span class="footer-title">SmartSeth & AR Bhutale Observability</span>
+        </div>
+        <p class="footer-desc">High-Availability K3s Microservices Cluster, Log Streaming & Automated Let's Encrypt TLS Manager.</p>
+      </div>
+      <div class="footer-middle">
+        <div class="footer-status-pill">
+          <span class="status-dot"></span>
+          <span>Cluster System: Healthy</span>
+        </div>
+        <div class="footer-links">
+          <a href="https://ar.bhutale.in" target="_blank" class="footer-link">🌐 Portfolio (ar.bhutale.in)</a>
+          <a href="https://ci.smartseth.com" target="_blank" class="footer-link">🛠️ Jenkins CI/CD</a>
+          <a href="https://logs.smartseth.com" target="_blank" class="footer-link">📊 Log Dashboard</a>
+        </div>
+      </div>
+      <div class="footer-right">
+        <div class="footer-copyright">© 2026 SmartSeth Infrastructure & AR Bhutale</div>
+        <div class="footer-version">v2.5.0 Auto-Sync • Zero SSH SSL Engine</div>
+      </div>
+    </div>
+  </footer>
 
   <!-- SSL Issue & Domain Manager Modal -->
   <div class="modal-overlay" id="sslIssueModal">
