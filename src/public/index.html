@@ -544,19 +544,46 @@
       .nav-sub-row { width: auto; flex: 1; justify-content: space-between; }
     }
     @media (max-width: 1099px) {
-      .navbar { padding: 10px 14px; gap: 8px; }
-      .nav-sub-row { flex-direction: column; align-items: stretch; gap: 6px; }
-      .env-toggle { width: 100%; justify-content: flex-start; overflow-x: auto; }
-      .nav-tabs { width: 100%; justify-content: flex-start; overflow-x: auto; }
+      .navbar { padding: 10px 14px; gap: 8px; width: 100%; box-sizing: border-box; }
+      .nav-sub-row { flex-direction: column; align-items: stretch; gap: 6px; width: 100%; box-sizing: border-box; }
+      .env-toggle { width: 100%; max-width: 100%; box-sizing: border-box; justify-content: space-between; }
+      .nav-tabs { width: 100%; max-width: 100%; box-sizing: border-box; justify-content: flex-start; overflow-x: auto; }
     }
     @media (max-width: 640px) {
-      .navbar { padding: 8px 10px; gap: 6px; }
+      .navbar { padding: 8px 10px; gap: 6px; width: 100%; max-width: 100vw; box-sizing: border-box; }
       .brand-subtitle { display: none; }
       .brand-logo { width: 32px; height: 32px; font-size: 16px; }
       .brand-title { font-size: 13.5px; }
       .live-badge { font-size: 10px; padding: 4px 8px; }
       .btn-icon { width: 32px; height: 32px; font-size: 14px; border-radius: 8px; }
-      .env-btn { padding: 5px 10px; font-size: 10.5px; white-space: nowrap; }
+      .env-toggle {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 3px;
+        gap: 3px;
+        border-radius: 20px;
+      }
+      .env-btn {
+        width: 100%;
+        padding: 6px 2px;
+        font-size: 10.5px;
+        font-weight: 800;
+        text-align: center;
+        border-radius: 16px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .nav-tabs {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
       .nav-tab { padding: 6px 10px; font-size: 11.5px; }
       .metrics-banner { grid-template-columns: 1fr; }
       .metric-card { padding: 14px; }
@@ -609,10 +636,10 @@
     <!-- Sub-Header Controls (Environment Selector & Nav Tabs) -->
     <div class="nav-sub-row">
       <div class="env-toggle">
-        <button class="env-btn active-dev" id="btn-env-dev" onclick="switchNamespace('dev')">DEV (.dev)</button>
-        <button class="env-btn" id="btn-env-prod" onclick="switchNamespace('prod')">PROD (.com)</button>
+        <button class="env-btn active-dev" id="btn-env-dev" onclick="switchNamespace('dev')">DEV</button>
+        <button class="env-btn" id="btn-env-prod" onclick="switchNamespace('prod')">PROD</button>
         <button class="env-btn" id="btn-env-shared" onclick="switchNamespace('shared')">SHARED</button>
-        <button class="env-btn" id="btn-env-personal" onclick="switchNamespace('personal')">PERSONAL (bhutale)</button>
+        <button class="env-btn" id="btn-env-personal" onclick="switchNamespace('personal')">PERSONAL</button>
       </div>
 
       <!-- Navigation Tabs -->
