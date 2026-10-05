@@ -1121,16 +1121,18 @@
     var envList = ['dev', 'prod', 'shared', 'personal'];
 
     function initSwipeGestures() {
-      var navEl = document.querySelector('.navbar');
-      if (!navEl) return;
+      var targetEl = document.body;
+      if (!targetEl) return;
 
-      navEl.addEventListener('touchstart', function(e) {
+      targetEl.addEventListener('touchstart', function(e) {
+        if (e.target.closest && e.target.closest('.modal, input, select, textarea, .modal-backdrop')) return;
         if (!e.changedTouches || !e.changedTouches.length) return;
         touchStartX = e.changedTouches[0].screenX;
         touchStartY = e.changedTouches[0].screenY;
       }, { passive: true });
 
-      navEl.addEventListener('touchend', function(e) {
+      targetEl.addEventListener('touchend', function(e) {
+        if (e.target.closest && e.target.closest('.modal, input, select, textarea, .modal-backdrop')) return;
         if (!e.changedTouches || !e.changedTouches.length) return;
         touchEndX = e.changedTouches[0].screenX;
         touchEndY = e.changedTouches[0].screenY;

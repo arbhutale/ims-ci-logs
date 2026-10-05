@@ -12,6 +12,9 @@ RUN curl -LO "https://dl.k8s.io/release/v1.31.0/bin/linux/amd64/kubectl" && \
 COPY package*.json ./
 RUN npm install --silent
 
+ARG BUILD_ID=1
+RUN echo "$BUILD_ID" > /app/build_id.txt
+
 COPY . .
 
 EXPOSE 8888
