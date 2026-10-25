@@ -51,6 +51,7 @@ function getServicesConfig(ns) {
     { id: 'ims-admin-web', name: 'Admin Portal', icon: '🖥️', port: 3000, domain: `${protocol}ims.${baseDomain}`, type: 'frontend', category: 'Frontends & UI', env: envTag, desc: 'Merchant & Inventory Management Next.js Web App' },
     { id: 'ims-superadmin-web', name: 'Superadmin Web', icon: '👑', port: 3002, domain: `${protocol}superadmin.${baseDomain}`, type: 'frontend', category: 'Frontends & UI', env: envTag, desc: 'Platform Superadmin SaaS Control Panel' },
     { id: 'ims-storefront-web', name: 'Storefront Web', icon: '🛍️', port: 3001, domain: isProd ? `${protocol}wififashion.${baseDomain}` : `${protocol}shiromanimart.${baseDomain}`, type: 'frontend', category: 'Frontends & UI', env: envTag, desc: 'Customer E-Commerce Web Storefront' },
+    { id: 'ims-landing-page', name: 'Landing Page', icon: '🚀', port: 80, domain: `${protocol}${baseDomain}`, type: 'frontend', category: 'Frontends & UI', env: envTag, desc: 'Public Marketing & Product Landing Page' },
     { id: 'ims-generator-backend', name: 'App Gen Backend', icon: '⚙️', port: 8005, domain: `${protocol}generator.${baseDomain}/api`, type: 'generator', category: 'App Generator', env: envTag, desc: 'White-label Mobile App Generator Backend' },
     { id: 'ims-generator-frontend', name: 'App Gen Frontend', icon: '📱', port: 3005, domain: `${protocol}generator.${baseDomain}`, type: 'generator', category: 'App Generator', env: envTag, desc: 'White-label Mobile App Generator UI' }
   ];
