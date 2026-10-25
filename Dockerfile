@@ -13,7 +13,7 @@ COPY package*.json ./
 RUN npm install --silent
 
 ARG BUILD_ID=1
-RUN echo "$BUILD_ID" > /app/build_id.txt
+RUN echo "Force fresh build: $BUILD_ID"
 
 COPY . .
 

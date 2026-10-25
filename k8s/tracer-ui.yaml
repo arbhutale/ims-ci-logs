@@ -4,6 +4,12 @@ metadata:
   name: trace-ui-sa
   namespace: dev
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: trace-ui-sa
+  namespace: shared
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -11,7 +17,7 @@ metadata:
 rules:
 - apiGroups: ["", "events.k8s.io"]
   resources: ["pods", "pods/log", "services", "namespaces", "nodes", "events", "secrets", "configmaps"]
-  verbs: ["get", "list", "watch", "create", "update", "patch"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 - apiGroups: ["metrics.k8s.io"]
   resources: ["pods", "nodes"]
   verbs: ["get", "list"]
@@ -27,6 +33,9 @@ subjects:
 - kind: ServiceAccount
   name: trace-ui-sa
   namespace: dev
+- kind: ServiceAccount
+  name: trace-ui-sa
+  namespace: shared
 roleRef:
   kind: ClusterRole
   name: trace-ui-cluster-role
@@ -63,8 +72,10 @@ spec:
         volumeMounts:
         - name: letsencrypt-certs
           mountPath: /etc/letsencrypt
+          readOnly: false
         - name: certbot-webroot
           mountPath: /var/www/certbot
+          readOnly: false
         resources:
           requests:
             cpu: 20m
